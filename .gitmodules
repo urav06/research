@@ -1,0 +1,9 @@
+[submodule "aaltd2024"]
+	path = aaltd2024
+	url = git@github.com:urav06/aaltd2024.git
+[submodule "hydra"]
+	path = hydra
+	url = git@github.com:urav06/hydra.git
+[submodule "quant"]
+	path = quant
+	url = git@github.com:urav06/quant.git
