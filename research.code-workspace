@@ -1,0 +1,32 @@
+{
+    "folders": [
+        {
+            "name": "🔬 Research (Main)",
+            "path": ".",
+        },
+        {
+            "name": "📊 Quant Algorithm",
+            "path": "./quant"
+        },
+        {
+            "name": "🌊 Hydra Algorithm", 
+            "path": "./hydra"
+        },
+        {
+            "name": "📈 AALTD2024",
+            "path": "./aaltd2024"
+        }
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "./venv/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "python.analysis.extraPaths": [
+            "./quant/code",
+            "./hydra/code",
+            "./aaltd2024/code",
+            "."
+        ],
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.autoSearchPaths": true,
+    }
+}
