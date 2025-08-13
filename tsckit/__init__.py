@@ -12,7 +12,6 @@ from tsckit.algorithms import (
     QuantOriginal,
     HydraOriginal,
     AeonAlgorithm,
-    QuantHydraEnsemble
 )
 from tsckit.runner import run_experiment, summarize_results
 

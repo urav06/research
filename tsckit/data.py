@@ -1,12 +1,13 @@
 """Dataset loading and management for MONSTER repository with lazy loading."""
 
-from typing import Tuple, Literal
+from typing import Tuple, Literal, Union
 
 import numpy as np
 import torch
 from sklearn.utils import resample
 from huggingface_hub import hf_hub_download
 
+ArrayLike = Union[np.ndarray, torch.Tensor]
 
 class MonsterDataset:
     """dataset class for MONSTER time series data."""
@@ -84,8 +85,8 @@ class MonsterDataset:
             random_state=self.random_state
         )
         return indices[sampled_positions]
-    
-    def get_arrays(self, split: Literal["train", "test"]):
+
+    def get_arrays(self, split: Literal["train", "test"], format: Literal["numpy", "torch"] = "numpy") -> Tuple[ArrayLike, ArrayLike]:
         """Load data arrays for the specified split."""
 
         if not self._downloaded or self._x_path is None or self._y_path is None:
@@ -94,14 +95,13 @@ class MonsterDataset:
         X = np.load(self._x_path, mmap_mode="r")
         y = np.load(self._y_path, mmap_mode="r")
 
-        if split == "train":
-            X = X[self._train_indices].astype(np.float32)
-            y = y[self._train_indices].astype(np.int32)
-        elif split == "test":
-            X = X[self._test_indices].astype(np.float32)
-            y = y[self._test_indices].astype(np.int32)
-        else:
-            raise ValueError(f"Invalid split: {split}. Use 'train' or 'test'.")
+        indices = self._train_indices if split == "train" else self._test_indices
+        X = X[indices].astype(np.float32)
+        y = y[indices].astype(np.int32)
+        
+        if format == "torch":
+            X = torch.from_numpy(X)
+            y = torch.from_numpy(y)
 
         return X, y
 
