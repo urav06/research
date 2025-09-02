@@ -26,7 +26,6 @@
             "./aaltd2024/code",
             "."
         ],
-        "python.analysis.autoImportCompletions": true,
         "python.analysis.autoSearchPaths": true,
     }
 }
