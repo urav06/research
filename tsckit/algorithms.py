@@ -25,7 +25,7 @@ from quant import Quant
 from hydra import Hydra, SparseScaler
 
 # AALTD2024 algorithm imports (paths must be set by notebook)
-from quant_aaltd import QuantClassifier
+from quant_aaltd import QuantClassifier, Quant as QuantTransform
 from hydra_gpu import HydraGPU
 from ridge import RidgeClassifier
 from utils import BatchDataset, Dataset
@@ -173,6 +173,162 @@ class HydraOriginal(TSCAlgorithm):
     @property
     def name(self) -> str:
         return f"HydraOriginal(k={self.k}, g={self.g}, seed={self.seed})"
+
+
+class HydraQuantStackedAALTD2024(TSCAlgorithm):
+    """Stacked ensemble: HYDRA's logits as additional features for QUANT's classifier."""
+    
+    DEFAULT_BATCH_SIZE = 256
+    
+    def __init__(self, 
+                 hydra_k: int = 8, 
+                 hydra_g: int = 64, 
+                 hydra_seed: int = 42,
+                 quant_estimators: int = 200):
+        """Initialize the stacked ensemble.
+        
+        Args:
+            hydra_k: Number of kernels per group for HYDRA
+            hydra_g: Number of groups for HYDRA  
+            hydra_seed: Random seed for HYDRA
+            quant_estimators: Number of estimators for QUANT's ExtraTreesClassifier
+        """
+        self.hydra_k = hydra_k
+        self.hydra_g = hydra_g
+        self.hydra_seed = hydra_seed
+        self.quant_estimators = quant_estimators
+        
+        # Components
+        self._hydra_transformer = None
+        self._hydra_classifier = None
+        self._quant_transformer = None
+        self._final_classifier = None
+        
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._num_classes = None
+    
+    def fit(self, dataset: MonsterDataset, **kwargs) -> None:
+        """Train the stacked ensemble.
+        
+        Training process:
+        1. Train HYDRA completely on training data
+        2. Get HYDRA's logits on training data
+        3. Extract QUANT features from training data
+        4. Concatenate QUANT features with HYDRA logits
+        5. Train ExtraTreesClassifier on combined features
+        """
+        batch_size = kwargs.get("batch_size", self.DEFAULT_BATCH_SIZE)
+        
+        # Step 1: Train HYDRA
+        data = Dataset(
+            path_X=dataset.x_path, 
+            path_Y=dataset.y_path, 
+            batch_size=batch_size
+        )
+        data_tr = data[dataset.train_indices]
+        
+        self._num_classes = len(data_tr.classes)
+        input_length = data_tr.shape[-1]
+        
+        self._hydra_transformer = HydraGPU(
+            input_length=input_length, 
+            k=self.hydra_k, 
+            g=self.hydra_g, 
+            seed=self.hydra_seed
+        ).to(self.device)
+        
+        self._hydra_classifier = RidgeClassifier(
+            transform=self._hydra_transformer, 
+            device=str(self.device)
+        )
+        self._hydra_classifier.fit(data_tr, num_classes=self._num_classes)
+        
+        # Step 2: Get HYDRA's logits on training data and extract QUANT features
+        X_train, y_train = dataset.get_arrays("train", format="torch")
+        
+        # Ensure y_train is numpy array
+        if isinstance(y_train, torch.Tensor):
+            y_train_np = y_train.numpy()
+        else:
+            y_train_np = y_train
+        
+        # Initialize QUANT transformer
+        self._quant_transformer = QuantTransform()
+        
+        # Get QUANT features (this also fits the transformer)
+        quant_features = self._quant_transformer.fit_transform(X_train, y_train_np)
+        
+        # Get HYDRA logits (batch processing for memory efficiency)
+        hydra_logits_list = []
+        batch_indices = torch.arange(X_train.shape[0]).split(batch_size)
+        
+        for batch_idx in batch_indices:
+            X_batch = X_train[batch_idx].numpy()
+            # Get raw logits (before argmax)
+            batch_logits = self._hydra_classifier._predict(X_batch)
+            # Move to CPU and convert to numpy if needed
+            if isinstance(batch_logits, torch.Tensor):
+                batch_logits = batch_logits.cpu().numpy()
+            hydra_logits_list.append(batch_logits)
+        
+        hydra_logits = np.vstack(hydra_logits_list)
+        
+        # Step 3: Concatenate features
+        # Convert quant_features to numpy if it's a tensor
+        if isinstance(quant_features, torch.Tensor):
+            quant_features = quant_features.numpy()
+        
+        combined_features = np.hstack([quant_features, hydra_logits])
+        
+        # Step 4: Train final classifier
+        self._final_classifier = ExtraTreesClassifier(
+            n_estimators=self.quant_estimators,
+            criterion="entropy",
+            max_features=0.1,
+            n_jobs=-1
+        )
+        self._final_classifier.fit(combined_features, y_train_np)
+    
+    def predict(self, dataset: MonsterDataset) -> np.ndarray:
+        """Make predictions using the stacked ensemble.
+        
+        Prediction process:
+        1. Extract QUANT features from test data
+        2. Get HYDRA's logits on test data
+        3. Concatenate features
+        4. Predict using trained ExtraTreesClassifier
+        """
+        if self._final_classifier is None or self._quant_transformer is None or self._hydra_classifier is None:
+            raise RuntimeError("Algorithm not fitted yet")
+        
+        X_test, _ = dataset.get_arrays("test", format="torch")
+        batch_size = self.DEFAULT_BATCH_SIZE
+        
+        # Get QUANT features
+        quant_features = self._quant_transformer.transform(X_test)
+        if isinstance(quant_features, torch.Tensor):
+            quant_features = quant_features.numpy()
+        
+        # Get HYDRA logits (batch processing)
+        X_test_np = X_test.numpy() if isinstance(X_test, torch.Tensor) else X_test
+        hydra_logits_list = []
+        
+        for i in range(0, X_test_np.shape[0], batch_size):
+            X_batch = X_test_np[i:i+batch_size]
+            batch_logits = self._hydra_classifier._predict(X_batch)
+            if isinstance(batch_logits, torch.Tensor):
+                batch_logits = batch_logits.cpu().numpy()
+            hydra_logits_list.append(batch_logits)
+        
+        hydra_logits = np.vstack(hydra_logits_list)
+        
+        # Concatenate and predict
+        combined_features = np.hstack([quant_features, hydra_logits])
+        return self._final_classifier.predict(combined_features)
+    
+    @property
+    def name(self) -> str:
+        return f"HydraQuantStacked(hydra_k={self.hydra_k},hydra_g={self.hydra_g},quant_est={self.quant_estimators})"
 
 
 class AeonAlgorithm(TSCAlgorithm):

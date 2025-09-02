@@ -12,6 +12,7 @@ from tsckit.algorithms import (
     QuantOriginal,
     HydraOriginal,
     AeonAlgorithm,
+    HydraQuantStackedAALTD2024
 )
 from tsckit.runner import run_experiment, summarize_results
 
@@ -26,6 +27,7 @@ __all__ = [
     "QuantOriginal", 
     "HydraOriginal",
     "AeonAlgorithm",
+    "HydraQuantStackedAALTD2024",
     
     # Experiment execution
     "run_experiment",
