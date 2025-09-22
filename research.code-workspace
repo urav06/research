@@ -5,6 +5,10 @@
             "path": ".",
         },
         {
+            "name": "📄 Thesis", 
+            "path": "./thesis"
+        },
+        {
             "name": "📊 Quant Algorithm",
             "path": "./quant"
         },

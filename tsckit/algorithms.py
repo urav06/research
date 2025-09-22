@@ -331,6 +331,84 @@ class HydraQuantStackedAALTD2024(TSCAlgorithm):
         return f"HydraQuantStacked(hydra_k={self.hydra_k},hydra_g={self.hydra_g},quant_est={self.quant_estimators})"
 
 
+class HydraQuantStacked(TSCAlgorithm):
+    """Clean stacked ensemble using proper cross-validation to avoid data leakage."""
+
+    def __init__(self,
+                 n_folds: int = 5,
+                 hydra_k: int = 8,
+                 hydra_g: int = 64,
+                 hydra_seed: int = 42,
+                 quant_depth: int = 6,
+                 quant_div: int = 4,
+                 n_estimators: int = 200):
+        """Initialize the clean stacked ensemble.
+
+        Args:
+            n_folds: Number of folds for cross-validated meta-feature generation
+            hydra_k: Number of kernels per group for HYDRA
+            hydra_g: Number of groups for HYDRA
+            hydra_seed: Random seed for HYDRA
+            quant_depth: Depth parameter for QUANT
+            quant_div: Divisor parameter for QUANT
+            n_estimators: Number of estimators for final ExtraTreesClassifier
+        """
+        self.n_folds = n_folds
+        self.hydra_k = hydra_k
+        self.hydra_g = hydra_g
+        self.hydra_seed = hydra_seed
+        self.quant_depth = quant_depth
+        self.quant_div = quant_div
+        self.n_estimators = n_estimators
+
+        self._ensemble = None
+
+    def fit(self, dataset: MonsterDataset, **kwargs) -> None:
+        """Train the ensemble using proper cross-validation."""
+        from tsckit.ensembles.stack import HydraQuantStacked as EnsembleCore
+
+        # Create Dataset object following QuantAALTD2024 pattern
+        data = Dataset(
+            path_X=dataset.x_path,
+            path_Y=dataset.y_path,
+            batch_size=kwargs.get("batch_size", 256),
+            shuffle=False  # Critical for cross-validation index alignment!
+        )
+        data_tr = data[dataset.train_indices]
+
+        self._ensemble = EnsembleCore(
+            n_folds=self.n_folds,
+            hydra_k=self.hydra_k,
+            hydra_g=self.hydra_g,
+            hydra_seed=self.hydra_seed,
+            quant_depth=self.quant_depth,
+            quant_div=self.quant_div,
+            n_estimators=self.n_estimators
+        )
+
+        self._ensemble.fit(data_tr)
+
+    def predict(self, dataset: MonsterDataset) -> np.ndarray:
+        """Make predictions using the trained ensemble."""
+        if self._ensemble is None:
+            raise RuntimeError("Ensemble not fitted. Call fit() first.")
+
+        # Create Dataset object for test data
+        data = Dataset(
+            path_X=dataset.x_path,
+            path_Y=dataset.y_path,
+            batch_size=256,
+            shuffle=False  # Maintain order for predictions
+        )
+        data_test = data[dataset.test_indices]
+
+        return self._ensemble.predict(data_test)
+
+    @property
+    def name(self) -> str:
+        return f"HydraQuantStacked(folds={self.n_folds},k={self.hydra_k},g={self.hydra_g},est={self.n_estimators})"
+
+
 class AeonAlgorithm(TSCAlgorithm):
     """Wrapper for AEON algorithms with uniform interface."""
     

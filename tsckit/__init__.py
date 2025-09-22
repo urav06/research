@@ -8,11 +8,12 @@ from tsckit.data import MonsterDataset
 from tsckit.algorithms import (
     TSCAlgorithm,
     QuantAALTD2024,
-    HydraAALTD2024, 
+    HydraAALTD2024,
     QuantOriginal,
     HydraOriginal,
     AeonAlgorithm,
-    HydraQuantStackedAALTD2024
+    HydraQuantStackedAALTD2024,
+    HydraQuantStacked
 )
 from tsckit.runner import run_experiment, summarize_results
 
@@ -28,6 +29,7 @@ __all__ = [
     "HydraOriginal",
     "AeonAlgorithm",
     "HydraQuantStackedAALTD2024",
+    "HydraQuantStacked",
     
     # Experiment execution
     "run_experiment",

@@ -81,8 +81,8 @@ class EnsembleBenchmark:
         dataset = MonsterDataset(
             self.dataset_name, 
             fold=0, 
-            train_pct=50.0,  # Use 100% of training data
-            test_pct=50.0    # Use 100% of test data
+            train_pct=10.0,  # Use 100% of training data
+            test_pct=10.0    # Use 100% of test data
         )
         
         # Load ground truth for accuracy calculation
