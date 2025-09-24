@@ -2,10 +2,10 @@
     "folders": [
         {
             "name": "🔬 Research (Main)",
-            "path": ".",
+            "path": "."
         },
         {
-            "name": "📄 Thesis", 
+            "name": "📄 Thesis",
             "path": "./thesis"
         },
         {
@@ -13,13 +13,13 @@
             "path": "./quant"
         },
         {
-            "name": "🌊 Hydra Algorithm", 
+            "name": "🌊 Hydra Algorithm",
             "path": "./hydra"
         },
         {
             "name": "📈 AALTD2024",
             "path": "./aaltd2024"
-        }
+        },
     ],
     "settings": {
         "python.defaultInterpreterPath": "./venv/bin/python",

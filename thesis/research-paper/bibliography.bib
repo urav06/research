@@ -1,0 +1,311 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Target Algorithms %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% papers/target-algorithms/quant.pdf
+@article{quant,
+	title = {Quant: a minimalist interval method for time series classification},
+	volume = {38},
+	issn = {1384-5810, 1573-756X},
+	shorttitle = {Quant},
+	url = {https://link.springer.com/10.1007/s10618-024-01036-9},
+	doi = {10.1007/s10618-024-01036-9},
+	abstract = {We show that it is possible to achieve the same accuracy, on average, as the most accurate existing interval methods for time series classification on a standard set of benchmark datasets using a single type of feature (quantiles), fixed intervals, and an 'off the shelf' classifier. This distillation of interval-based approaches represents a fast and accurate method for time series classification, achieving state-of-the-art accuracy on the expanded set of 142 datasets in the UCR archive with a total compute time (training and inference) of less than 15 min using a single CPU core.},
+	language = {en},
+	number = {4},
+	urldate = {2025-09-22},
+	journal = {Data Mining and Knowledge Discovery},
+	author = {Dempster, Angus and Schmidt, Daniel F. and Webb, Geoffrey I.},
+	month = jul,
+	year = {2024},
+	pages = {2377--2402},
+}
+
+%% papers/target-algorithms/hydra.pdf
+@article{hydra,
+	title = {Hydra: competing convolutional kernels for fast and accurate time series classification},
+	volume = {37},
+	issn = {1384-5810, 1573-756X},
+	shorttitle = {Hydra},
+	url = {https://link.springer.com/10.1007/s10618-023-00939-3},
+	doi = {10.1007/s10618-023-00939-3},
+	abstract = {We demonstrate a simple connection between dictionary methods for time series classification, which involve extracting and counting symbolic patterns in time series, and methods based on transforming input time series using convolutional kernels, namely Rocket and its variants. We show that by adjusting a single hyper-parameter it is possible to move by degrees between models resembling dictionary methods and models resembling Rocket. We present HydRa, a simple, fast, and accurate dictionary method for time series classification using competing convolutional kernels, combining key aspects of both Rocket and conventional dictionary methods. HydRa is faster and more accurate than the most accurate existing dictionary methods, achieving similar accuracy to several of the most accurate current methods for time series classification. HydRa can also be combined with Rocket and its variants to significantly improve the accuracy of these methods.},
+	language = {en},
+	number = {5},
+	urldate = {2025-09-22},
+	journal = {Data Mining and Knowledge Discovery},
+	author = {Dempster, Angus and Schmidt, Daniel F. and Webb, Geoffrey I.},
+	month = sep,
+	year = {2023},
+	pages = {1779--1805},
+}
+
+%% papers/target-algorithms/highly-scalable.pdf
+@incollection{highly-scalable,
+    abstract = {Relatively little work in the field of time series classification focuses on learning effectively from very large quantities of data. Large datasets present significant practical challenges in terms of computational cost and memory complexity.  We present strategies for extending two recent state-of-the-art methods for time series classification—namely, Hydra and Quant—to very large datasets. This allows for training these methods on large quantities of data with a fixed memory cost, while making effective use of appropriate computational resources. For Hydra, we fit a ridge regression classifier iteratively, using a single pass through the data, integrating the Hydra transform with the process of fitting the ridge regression model, allowing for a fixed memory cost, and allowing almost all computation to be performed on GPU. For Quant, we 'spread' subsets of extremely randomised trees over a given dataset such that each tree is trained using as much data as possible for a given amount of memory while minimising reads from the data, allowing for a simple tradeoff between error and computational cost. This allows for the straightforward application of both methods to very large quantities of data. We demonstrate these approaches with results (including learning curves) on a selection of large datasets with between approximately 85,000 and 47 million training examples.},
+    author = {Dempster, Angus and Tan, Chang Wei and Miller, Lynn and Foumani, Navid Mohammadi and Schmidt, Daniel F. and Webb, Geoffrey I. and Malinowski, Simon and Ifrim, Georgiana and Schäfer, Patrick and Bagnall, Anthony and Tavenard, Romain and Guyet, Thomas and Lemaire, Vincent},
+    series = {Lecture Notes in Computer Science},
+    address = {Switzerland},
+    booktitle = {Advanced Analytics and Learning on Temporal Data},
+    copyright = {The Author(s), under exclusive license to Springer Nature Switzerland AG 2025},
+    title = {Highly Scalable Time Series Classification for Very Large Datasets},
+    volume = {15433},
+    isbn = {9783031770654},
+    year = {2025},
+    issn = {0302-9743},
+    keywords = {time series classification ;  big data ;  hydra ;  quant},
+    language = {eng},
+    pages = {80-95},
+    publisher = {Springer},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Evaluation %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% papers/evaluation/tsc-bakeoff.pdf
+@article{tsc-bakeoff,
+	title = {The great time series classification bake off: a review and experimental evaluation of recent algorithmic advances},
+	volume = {31},
+	issn = {1384-5810, 1573-756X},
+	shorttitle = {The great time series classification bake off},
+	url = {http://link.springer.com/10.1007/s10618-016-0483-9},
+	doi = {10.1007/s10618-016-0483-9},
+	language = {en},
+	number = {3},
+	urldate = {2025-09-22},
+	journal = {Data Mining and Knowledge Discovery},
+	author = {Bagnall, Anthony and Lines, Jason and Bostrom, Aaron and Large, James and Keogh, Eamonn},
+	month = may,
+	year = {2017},
+	pages = {606--660},
+}
+
+%% papers/evaluation/bakeoff-redux.pdf
+@article{bakeoff-redux,
+	title = {Bake off redux: a review and experimental evaluation of recent time series classification algorithms},
+	volume = {38},
+	issn = {1384-5810, 1573-756X},
+	shorttitle = {Bake off redux},
+	url = {https://link.springer.com/10.1007/s10618-024-01022-1},
+	doi = {10.1007/s10618-024-01022-1},
+	language = {en},
+	number = {4},
+	urldate = {2025-09-22},
+	journal = {Data Mining and Knowledge Discovery},
+	author = {Middlehurst, Matthew and Schäfer, Patrick and Bagnall, Anthony},
+	month = jul,
+	year = {2024},
+	pages = {1958--2031},
+}
+
+%% papers/evaluation/mtsc-bakeoff.pdf
+@article{mtsc-bakeoff,
+	title = {The great multivariate time series classification bake off: a review and experimental evaluation of recent algorithmic advances},
+	volume = {35},
+	issn = {1384-5810, 1573-756X},
+	shorttitle = {The great multivariate time series classification bake off},
+	url = {http://link.springer.com/10.1007/s10618-020-00727-3},
+	doi = {10.1007/s10618-020-00727-3},
+	language = {en},
+	number = {2},
+	urldate = {2025-09-22},
+	journal = {Data Mining and Knowledge Discovery},
+	author = {Ruiz, Alejandro Pasos and Flynn, Michael and Large, James and Middlehurst, Matthew and Bagnall, Anthony},
+	month = mar,
+	year = {2021},
+	pages = {401--449},
+}
+
+%% papers/evaluation/aeon.pdf
+@misc{aeon-arxiv,
+	title={aeon: a Python toolkit for learning from time series}, 
+	author={Matthew Middlehurst and Ali Ismail-Fawaz and Antoine Guillaume and Christopher Holder and David Guijo Rubio and Guzal Bulatova and Leonidas Tsaprounis and Lukasz Mentel and Martin Walter and Patrick Schäfer and Anthony Bagnall},
+	year={2024},
+	eprint={2406.14231},
+	archivePrefix={arXiv},
+	primaryClass={cs.LG},
+	url={https://arxiv.org/abs/2406.14231}, 
+}
+
+%% papers/evaluation/monster.pdf
+@article{monster,
+    abstract = {},
+    author = {Dempster, Angus and Foumani, Navid Mohammadi and Tan, Chang Wei and Miller, Lynn and Mishra, Amish and Salehi, Mahsa and Pelletier, Charlotte and Schmidt, Daniel F and Webb, Geoffrey I},
+    copyright = {http://arxiv.org/licenses/nonexclusive-distrib/1.0},
+    title = {MONSTER: Monash Scalable Time Series Evaluation Repository},
+    year = {2025},
+    keywords = {Computer Science - Learning},
+    language = {eng},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Ensemble Methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% papers/ensemble-methods/hive-cote.pdf
+@article{hive-cote,
+	title = {Time series classification with hive-cote: the hierarchical vote collective of transformation-based ensembles},
+	volume = {12},
+	issn = {1556-4681, 1556-472X},
+	shorttitle = {Time series classification with hive-cote},
+	url = {https://dl.acm.org/doi/10.1145/3182382},
+	doi = {10.1145/3182382},
+	language = {en},
+	number = {5},
+	urldate = {2025-09-22},
+	journal = {ACM Transactions on Knowledge Discovery from Data},
+	author = {Lines, Jason and Taylor, Sarah and Bagnall, Anthony},
+	month = oct,
+	year = {2018},
+	pages = {1--35},
+}
+
+%% papers/ensemble-methods/hive-cote-2.pdf
+@article{hive-cote-2,
+	title = {{HIVE}-{COTE} 2.0: a new meta ensemble for time series classification},
+	volume = {110},
+	issn = {0885-6125, 1573-0565},
+	shorttitle = {{HIVE}-{COTE} 2.0},
+	url = {https://link.springer.com/10.1007/s10994-021-06057-9},
+	doi = {10.1007/s10994-021-06057-9},
+	language = {en},
+	number = {11-12},
+	urldate = {2025-09-22},
+	journal = {Machine Learning},
+	author = {Middlehurst, Matthew and Large, James and Flynn, Michael and Lines, Jason and Bostrom, Aaron and Bagnall, Anthony},
+	month = dec,
+	year = {2021},
+	pages = {3211--3243},
+}
+
+%% papers/ensemble-methods/stacked-generalization.pdf
+@article{stacked-generalization,
+	abstract = {This paper introduces stacked generalization, a scheme for minimizing the generalization error rate of one or more generalizers. Stacked generalization works by deducing the biases of the generalizer(s) with respect to a provided learning set. This deduction proceeds by generalizing in a second space whose inputs are (for example) the guesses of the original generalizers when taught with part of the learning set and trying to guess the rest of it, and whose output is (for example) the correct guess. When used with multiple generalizers, stacked generalization can be seen as a more sophisticated version of cross-validation, exploiting a strategy more sophisticated than cross-validation's crude winner-takes-all for combining the individual generalizers. When used with a single generalizer, stacked generalization is a scheme for estimating (and then correcting for) the error of a generalizer which has been trained on a particular learning set and then asked a particular question. After introducing stacked generalization and justifying its use, this paper presents two numerical experiments. The first demonstrates how stacked generalization improves upon a set of separate generalizers for the NETtalk task of translating text to phonemes. The second demonstrates how stacked generalization improves the performance of a single surface-fitter. With the other experimental evidence in the literature, the usual arguments supporting cross-validation, and the abstract justifications presented in this paper, the conclusion is that for almost any real-world generalization problem one should use some version of stacked generalization to minimize the generalization error rate. This paper ends by discussing some of the variations of stacked generalization, and how it touches on other fields like chaos theory.},
+	author = {Wolpert, David H.},
+	address = {Oxford},
+	copyright = {1992 Pergamon Press Ltd.},
+	title = {Stacked generalization},
+	volume = {5},
+	year = {1992},
+	issn = {0893-6080},
+	journal = {Neural networks},
+	keywords = {Generalization and induction ;  Combining generalizers ;  cross-validation ;  Error estimation and correction ;  Exact sciences and technology ;  Function theory analysis ;  Learning set preprocessing ;  Mathematical methods in physics ;  Physics},
+	language = {eng},
+	number = {2},
+	pages = {241-259},
+	publisher = {Elsevier Ltd},
+}
+
+%% papers/ensemble-methods/cawpe.pdf
+@article{cawpe,
+    abstract = {Our hypothesis is that building ensembles of small sets of strong classifiers constructed with different learning algorithms is, on average, the best approach to classification for real-world problems. We propose a simple mechanism for building small heterogeneous ensembles based on exponentially weighting the probability estimates of the base classifiers with an estimate of the accuracy formed through cross-validation on the train data. We demonstrate through extensive experimentation that, given the same small set of base classifiers, this method has measurable benefits over commonly used alternative weighting, selection or meta-classifier approaches to heterogeneous ensembles. We also show how an ensemble of five well-known, fast classifiers can produce an ensemble that is not significantly worse than large homogeneous ensembles and tuned individual classifiers on datasets from the UCI archive. We provide evidence that the performance of the cross-validation accuracy weighted probabilistic ensemble (CAWPE) generalises to a completely separate set of datasets, the UCR time series classification archive, and we also demonstrate that our ensemble technique can significantly improve the state-of-the-art classifier for this problem domain. We investigate the performance in more detail, and find that the improvement is most marked in problems with smaller train sets. We perform a sensitivity analysis and an ablation study to demonstrate the robustness of the ensemble and the significant contribution of each design element of the classifier. We conclude that it is, on average, better to ensemble strong classifiers with a weighting scheme rather than perform extensive tuning and that CAWPE is a sensible starting point for combining classifiers.},
+    author = {Large, James and Lines, Jason and Bagnall, Anthony},
+    address = {New York},
+    copyright = {The Author(s) 2019},
+    title = {A probabilistic classifier ensemble weighting scheme based on cross-validated accuracy estimates},
+    volume = {33},
+    year = {2019},
+    issn = {1384-5810},
+    journal = {Data mining and knowledge discovery},
+    keywords = {Classifiers ;  Ablation ;  Accuracy ;  Algorithms ;  Archives & records ;  Artificial Intelligence ;  Chemistry and Earth Sciences ;  Classification ;  Computer Science ;  Data Mining and Knowledge Discovery ;  Datasets ;  Experimentation ;  Information Storage and Retrieval ;  Machine learning ;  Physics ;  Probability theory ;  Sensitivity analysis ;  Statistical analysis ;  Statistics for Engineering ;  Weighting},
+    language = {eng},
+    number = {6},
+    pages = {1674-1709},
+    publisher = {Springer US},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Algorithmic Foundations %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% papers/algorithmic-foundations/rocket.pdf
+@article{rocket,
+	abstract = {Most methods for time series classification that attain state-of-the-art accuracy have high computational complexity, requiring significant training time even for smaller datasets, and are intractable for larger datasets. Additionally, many existing methods focus on a single type of feature such as shape or frequency. Building on the recent success of convolutional neural networks for time series classification, we show that simple linear classifiers using random convolutional kernels achieve state-of-the-art accuracy with a fraction of the computational expense of existing methods. Using this method, it is possible to train and test a classifier on all 85 'bake off' datasets in the UCR archive in < 2 h, and it is possible to train a classifier on a large dataset of more than one million time series in approximately 1h.},
+	author = {Dempster, Angus and Petitjean, François and Webb, Geoffrey I.},
+	address = {New York},
+	copyright = {The Author(s), under exclusive licence to Springer Science+Business Media LLC, part of Springer Nature 2020},
+	title = {ROCKET: exceptionally fast and accurate time series classification using random convolutional kernels},
+	volume = {34},
+	year = {2020},
+	issn = {1384-5810},
+	journal = {Data mining and knowledge discovery},
+	keywords = {Artificial Intelligence ;  Artificial neural networks ;  Chemistry and Earth Sciences ;  Classification ;  Classifiers ;  Computer Science ;  Data Mining and Knowledge Discovery ;  Datasets ;  Information Storage and Retrieval ;  Journal Track of ECML PKDD 2020 ;  Kernels ;  Physics ;  Statistics for Engineering ;  Time series},
+	language = {eng},
+	number = {5},
+	pages = {1454-1495},
+	publisher = {Springer US},
+}
+
+%% papers/algorithmic-foundations/minirocket.pdf
+@inproceedings{minirocket,
+	author = {Dempster, Angus and Schmidt, Daniel F. and Webb, Geoffrey I.},
+	address = {New York, NY, USA},
+	booktitle = {Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery \& Data Mining},
+	copyright = {2021 ACM},
+	title = {MiniRocket: A Very Fast (Almost) Deterministic Transform for Time Series Classification},
+	isbn = {9781450383325},
+	year = {2021},
+	keywords = {Computing methodologies -- Machine learning ;  Information systems -- Information systems applications -- Data mining},
+	language = {eng},
+	pages = {248-257},
+	publisher = {ACM},
+}
+
+%% papers/algorithmic-foundations/multirocket.pdf
+@article{multirocket,
+	abstract = {We propose MultiRocket, a fast timeseries classification (TSC) algorithm that achieves state-of-the-art accuracy with a tiny fraction of the time and without the complex ensembling structure of many state-of-the-art methods. MultiRocket improves on MiniRocket, one of the fastest TSC algorithms to date, by adding multiple pooling operators and transformations to improve the diversity of the features generated. In addition to processing the raw input series, MultiRocket also applies first order differences to transform the original series. Convolutions are applied to both representations, and four pooling operators are applied to the convolution outputs. When benchmarked using the University of California Riverside TSC benchmark datasets, MultiRocket is significantly more accurate than MiniRocket, and competitive with the best ranked current method in terms of accuracy, HIVE-COTE 2.0, while being orders of magnitude faster.},
+	author = {Tan, Chang Wei and Dempster, Angus and Bergmeir, Christoph and Webb, Geoffrey I.},
+	address = {New York},
+	copyright = {Crown 2022},
+	title = {MultiRocket: multiple pooling operators and transformations for fast and effective time series classification},
+	volume = {36},
+	year = {2022},
+	issn = {1384-5810},
+	journal = {Data mining and knowledge discovery},
+	keywords = {Accuracy ;  Algorithms ;  Archives & records ;  Artificial Intelligence ;  Chemistry and Earth Sciences ;  Classification ;  Computer Science ;  Data Mining and Knowledge Discovery ;  Datasets ;  Deep learning ;  Information Storage and Retrieval ;  Methods ;  Operators ;  Physics ;  Statistics for Engineering ;  Time series},
+	language = {eng},
+	number = {5},
+	pages = {1623-1646},
+	publisher = {Springer US},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Paradigm Diversity %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% papers/paradigm-diversity/sakoe-chiba-1978.pdf
+@article{sakoe_chiba_1978,
+	title = {Dynamic programming algorithm optimization for spoken word recognition},
+	volume = {26},
+	copyright = {https://ieeexplore.ieee.org/Xplorehelp/downloads/license-information/IEEE.html},
+	issn = {0096-3518},
+	url = {http://ieeexplore.ieee.org/document/1163055/},
+	doi = {10.1109/TASSP.1978.1163055},
+	language = {en},
+	number = {1},
+	urldate = {2025-09-22},
+	journal = {IEEE Transactions on Acoustics, Speech, and Signal Processing},
+	author = {Sakoe, H. and Chiba, S.},
+	month = feb,
+	year = {1978},
+	pages = {43--49},
+}
+
+%% papers/paradigm-diversity/time-series-shapelets.pdf
+@article{time_series_shapelets,
+	title = {Time series shapelets: a novel technique that allows accurate, interpretable and fast classification},
+	volume = {22},
+	issn = {1384-5810, 1573-756X},
+	shorttitle = {Time series shapelets},
+	url = {http://link.springer.com/10.1007/s10618-010-0179-5},
+	doi = {10.1007/s10618-010-0179-5},
+	language = {en},
+	number = {1-2},
+	urldate = {2025-09-22},
+	journal = {Data Mining and Knowledge Discovery},
+	author = {Ye, Lexiang and Keogh, Eamonn},
+	month = jan,
+	year = {2011},
+	pages = {149--182},
+}
