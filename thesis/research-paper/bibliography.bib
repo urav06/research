@@ -139,6 +139,22 @@
     language = {eng},
 }
 
+%% papers/evaluation/less-is-more.pdf
+@article{less-is-more,
+    abstract = {In this paper, we have proposed a new pipeline for landscape analysis of time-series machine learning datasets that enables us to better understand a benchmarking problem landscape, allows us to select a diverse benchmark datasets portfolio, and reduces the presence of performance assessment bias via bootstrapping evaluation. Combining a large multi-domain representation corpus of time-series specific features and the results of a large empirical study of time-series classification (TSC) benchmark, we showcase the capability of the pipeline to point out issues with non-redundancy and representativeness in the benchmark. By observing discrepancy between the empirical results of the bootstrap evaluation and recently adopted practices in TSC literature when introducing novel methods, we warn on the potentially harmful effects of tuning the methods on certain parts of the landscape (unless this is an explicit and desired goal of the study). Finally, we propose a set of datasets uniformly distributed across the landscape space one should consider when benchmarking novel TSC methods.},
+	author = {Tome Eftimov and Gašper Petelin and Gjorgjina Cenikj and Ana Kostovska and Gordana Ispirova and Peter Korošec and Jasmin Bogatinovski},
+    title = {Less is more: Selecting the right benchmarking set of data for time series classification},
+    volume = {198},
+    year = {2022},
+    issn = {0957-4174},
+    journal = {Expert systems with applications},
+    keywords = {Benchmarking ;  Benchmarks ;  Classification ;  Datasets ;  Datasets selection ;  Empirical analysis ;  Landscape analysis ;  Machine learning ;  Performance assessment ;  Redundancy ;  Time-series analysis},
+    language = {eng},
+    pages = {116871},
+	doi = {https://doi.org/10.1016/j.eswa.2022.116871},
+	url = {https://www.sciencedirect.com/science/article/pii/S0957417422003189},
+}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Ensemble Methods %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -213,6 +229,38 @@
     number = {6},
     pages = {1674-1709},
     publisher = {Springer US},
+}
+
+%% papers/ensemble-methods/tsc-automl.pdf
+@inproceedings{tsc-automl,
+    abstract = {With years of development, a significant number of Time Series Classification (TSC) algorithms have been proposed and applied to various fields such as scientific research and industry scenarios, including traditional statistical methods, machine learning methods, and recently deep learning models. However, choosing a suitable model along with good parameter values that perform well on a given task, which is also known as Combined Algorithm Selection and Hyperparameter optimization problem (CASH), is still challenging. How to automatically select the appropriate algorithm according to the task during analyzing is a topic worthy of further research. Nevertheless, for TSC, a field that has been developed for decades, there is no effective and efficient approach for automatic algorithm selection. To the best of our knowledge, the current approach is based on genetic search, which is very computationally intensive and time-consuming. Therefore, in this paper, we propose TSC-AutoML, a zero-configuration and meta-learning-based approach for the automatic Time Series Classification algorithm CASH (also known as TSC-CASH). TSC-AutoML extracts knowledge from historical tasks and performs automatic feature selection and knowledge filtering with a reinforcement learning policy. The experience extracted is filtered and transformed into metadata. The meta-learner trained on the metadata together with our proposed warm start strategy will select an optimal algorithm for tasks uploaded by users, and then our proposed Hyperparameter Optimization method based on the Fast Warm Start strategy searches for hyperparameter combinations of the selected algorithm and adjusts parameter configuration to achieve top performance. The entire process is pre-trained, automated for the new task, and parameter-free for the user to decide, making it easy for users with the little domain experience to get started easily. Experimental results illustrate that TSC-AutoML outperforms existing methods in terms of both time and accuracy of optimum algorithm selection.},
+    author = {Mu, Tianyu and Wang, Hongzhi and Zheng, Shenghe and Liang, Zhiyu and Wang, Chunnan and Shao, Xinyue and Liang, Zheng},
+    booktitle = {Data engineering},
+    title = {TSC-AutoML: Meta-learning for Automatic Time Series Classification Algorithm Selection},
+    isbn = {9798350322279},
+    year = {2023},
+    issn = {2375-026X},
+    keywords = {Automatic algorithm selection ;  AutoML ;  Deep Q-Network ;  Hyperparameter optimization ;  Machine learning algorithms ;  Metadata ;  Metalearning ;  Reinforcement learning ;  Statistical analysis ;  Time series analysis ;  Time series classification},
+    language = {eng},
+    pages = {1032-1044},
+    publisher = {IEEE},
+}
+
+%% papers/ensemble-methods/ensemble-predictors.pdf
+@article{ensemble-predictors,
+    abstract = {In this article we propose a conceptual framework to study ensembles of conformal predictors (CP), that we call Ensemble Predictors (EP). Our approach is inspired by the application of imprecise probabilities in information fusion. Based on the proposed framework, we study, for the first time in the literature, the theoretical properties of CP ensembles in a general setting, by focusing on simple and commonly used possibilistic combination rules. We also illustrate the applicability of the proposed methods in the setting of multivariate time-series classification, showing that these methods provide better performance (in terms of both robustness, conservativeness, accuracy and running time) than both standard classification algorithms and other combination rules proposed in the literature, on a large set of benchmarks from the UCR time series archive.},
+    author = {Campagner, Andrea and Barandas, Marilia and Folgado, Duarte and Gamboa, Hugo and Cabitza, Federico},
+    address = {United States},
+    title = {Ensemble Predictors: Possibilistic Combination of Conformal Predictors for Multivariate Time Series Classification},
+    volume = {46},
+    year = {2024},
+    issn = {0162-8828},
+    journal = {IEEE transactions on pattern analysis and machine intelligence},
+    keywords = {multivariate time series ;  Benchmark testing ;  Computational modeling ;  Conformal prediction (CP) ;  Ensemble learning ;  Focusing ;  machine learning ;  Possibility theory ;  robustness ;  Task analysis ;  Time series analysis},
+    language = {eng},
+    number = {11},
+    pages = {7205-7216},
+    publisher = {IEEE},
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

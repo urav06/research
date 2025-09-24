@@ -147,33 +147,77 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor i
 
 \section{Related Work}\label{sec2}
 
-The evolution of time series classification has been characterized by the emergence of diverse algorithmic paradigms, each capturing different aspects of temporal patterns \cite{tsc-bakeoff}. This diversity has led to the development of comprehensive ensemble methods that achieve state-of-the-art accuracy through paradigm combination, albeit with significant computational overhead \cite{hive-cote-2}. In this section, we examine the theoretical foundations underlying successful ensemble approaches and identify opportunities for targeted algorithmic complementarity that balance accuracy with computational efficiency.
+The evolution of time series classification has been characterized by the emergence of diverse algorithmic paradigms, each capturing different aspects of temporal patterns, alongside sophisticated ensemble methods that achieve state-of-the-art accuracy through principled combination strategies. In this section, we examine the theoretical foundations underlying successful TSC approaches, ensemble design principles, and identify opportunities for targeted algorithmic complementarity that balance accuracy with computational efficiency.
 
-\subsection{The Paradigm Diversity Principle in Time Series Classification}
+\subsection{Time Series Classification Paradigms}
 
-The comprehensive evaluation by \citet[p.~637]{tsc-bakeoff} established a fundamental principle in TSC: ``no one representation will dominate'' across the diverse range of problem types encountered in practice. This seminal work evaluated 18 algorithms across 85 datasets using rigorous statistical protocols, revealing that different algorithmic paradigms excel on different problem characteristics. Specifically, the authors demonstrated that performance differences between optimal and suboptimal paradigms can range from 5-15\%, highlighting the substantial gains achievable through intelligent paradigm combination.
+The comprehensive evaluation by \citet[p.~610]{tsc-bakeoff} established a fundamental taxonomic framework for TSC algorithms, identifying five primary paradigms based on their discriminatory features. \textbf{Whole series methods} compare time series as vectors or using elastic distance measures, with Dynamic Time Warping serving as the canonical example. \textbf{Interval-based methods} select phase-dependent segments of the series, exemplified by Time Series Forest \cite{deng-2013} which extracts features from random intervals. \textbf{Shapelet-based approaches} discover phase-independent discriminative subsequences \cite{time_series_shapelets}, while \textbf{dictionary methods} build classification models on histograms of recurring pattern frequencies \cite{schaefer-2015}. Finally, \textbf{combination approaches} integrate multiple paradigms to leverage complementary information sources.
 
-The success of the first comprehensive ensemble, COTE (Collective of Transformation-based Ensembles), provided empirical validation of this principle \citep[p.~638]{tsc-bakeoff}. By combining four distinct transformation domains—shapelet, dictionary, interval, and spectral—COTE achieved an 8\% improvement over the then-dominant Dynamic Time Warping approach. However, this accuracy gain came at considerable computational cost, with complexity scaling as $O(n^2m^4)$, primarily driven by the computationally expensive shapelet transform component.
+This paradigm diversity reflects a fundamental principle established by \citet[p.~637]{tsc-bakeoff}: ``no one representation will dominate'' across the diverse range of problem types encountered in practice. Their rigorous evaluation of 18 algorithms across 85 datasets revealed that performance differences between optimal and suboptimal paradigms can range from 5-15\% \citep[p.~647, Table~11]{tsc-bakeoff}, demonstrating substantial gains achievable through intelligent paradigm combination.
 
-\subsection{The Convolutional Kernel Revolution}
+\subsection{Ensemble Methods in Time Series Classification}
 
-A paradigm shift occurred with the introduction of ROCKET \citep[p.~1455]{rocket}, which demonstrated that ``simple linear classifiers using random convolutional kernels achieve state-of-the-art accuracy with a fraction of the computational expense of existing methods.'' This breakthrough challenged the prevailing assumption that computational complexity was necessary for high accuracy in TSC.
+\subsubsection{Theoretical Foundations}
 
-ROCKET's innovation centered on the insight that ``a large number of random convolutional kernels which, in combination, capture features relevant for time series classification'' could rival learned features while maintaining linear scalability \citep[p.~1455]{rocket}. The algorithm's novel Proportion of Positive Values (PPV) pooling mechanism proved particularly effective, capturing not just the presence but the prevalence of patterns across time series \cite{rocket}. The empirical results were striking: training on all 85 UCR datasets required less than 2 hours compared to days for existing methods, while maintaining competitive accuracy with HIVE-COTE.
+The theoretical foundation for ensemble methods in machine learning was established by \citet[p.~241]{stacked-generalization}, who demonstrated that ensemble approaches work by ``deducing the biases of the generalizer(s) with respect to a provided learning set.'' Wolpert's stacked generalization framework provides a principled meta-learning approach that goes beyond simple voting by learning optimal combination weights through structured bias correction \citep[p.~242]{stacked-generalization}.
 
-This foundation enabled subsequent innovations in the ROCKET family. MiniRocket \cite{minirocket} achieved near-deterministic performance with even greater speed, while MultiRocket \cite{multirocket} extended the approach to capture additional temporal relationships through multiple pooling operators and transformations.
+Modern ensemble theory emphasizes the critical role of diversity in achieving performance gains. The bias-variance-covariance decomposition shows that ensemble effectiveness depends not only on individual component accuracy but also on the correlation structure between base learners. For time series classification, this diversity principle manifests through the combination of different representational paradigms that capture orthogonal aspects of temporal patterns.
 
-\subsection{Targeted Algorithmic Complementarity}
+\subsubsection{Hierarchical Ensemble Architecture}
 
-Building on ROCKET's computational efficiency principles, recent work has explored targeted combinations of specific algorithms designed for complementary information capture. \citet[p.~1780]{hydra} introduced Hydra, which bridges dictionary and convolutional approaches through ``competing convolutional kernels'' that organize random kernels into groups where only the closest pattern match contributes to the feature representation. This approach combines the computational efficiency of random kernels with the interpretability advantages of dictionary methods.
+The first comprehensive ensemble approach in TSC was COTE (Collective of Transformation-based Ensembles), which provided empirical validation of paradigm diversity principles \citep[p.~609]{tsc-bakeoff}. By combining four distinct transformation domains (shapelet, dictionary, interval, and spectral), COTE achieved over 8\% improvement compared to the then-dominant DTW approach, demonstrating the substantial gains possible through paradigm integration.
 
-Simultaneously, \citet{quant} developed Quant, a minimalist interval-based method that captures discriminative information through quantile distributions across fixed dyadic intervals. Quant's theoretical foundation rests on the principle that ``class can be distinguished based on the distribution of values in different locations of a time series,'' providing a complementary perspective to pattern-based approaches. Remarkably, Quant achieves state-of-the-art accuracy using only quantile features and fixed intervals, with total compute time of less than 15 minutes across 142 UCR datasets.
+HIVE-COTE extended this approach through hierarchical architecture that addressed bias issues in flat ensemble structures \citep[p.~7]{hive-cote}. The key innovation was organizing ensembles into domain-specific modules, each providing a single weighted vote rather than allowing domains with more base learners to dominate the final decision. HIVE-COTE 2.0 \citep[p.~3]{hive-cote-2} further refined this architecture with five domains: dictionary-based TDE, interval-based DrCIF, convolution-based Arsenal, shapelet-based STC, and distance-based methods, achieving state-of-the-art accuracy through this comprehensive coverage.
 
-\subsection{The Computational Challenge of Comprehensive Ensembles}
+\subsubsection{Ensemble Combination Strategies}
 
-While HIVE-COTE 2.0 \cite{hive-cote-2} represents the current accuracy benchmark in TSC through its hierarchical combination of five algorithmic domains, its computational requirements remain prohibitive for many practical applications. The ensemble requires 340+ hours for complete training across the UCR archive, with individual components like the Shapelet Transform consuming hours even with contracted training \citep[p.~3218]{hive-cote-2}. This computational expense stems from the exhaustive coverage approach: including all major TSC paradigms and allowing the meta-learning framework to determine optimal weightings.
+Beyond architectural considerations, the method for combining ensemble predictions critically impacts performance. \citet[p.~3]{cawpe} introduced the Cross-validation Accuracy Weighted Probabilistic Ensemble (CAWPE) framework, which uses exponential weighting with parameter $\alpha=4$ to ``magnify differences in competence'' between base classifiers. The mathematical formulation $p(y=i|E,x) \propto \sum_{j=1}^k w_j^4 p_j(y=i|M_j,x)$ \citep[p.~8, Equation~1]{cawpe} significantly outperforms simple averaging or voting strategies.
 
-Despite contractable training options that achieve 98\% of full accuracy in 4 hours and 99\% in 12 hours \cite{hive-cote-2}, the fundamental tension between comprehensive coverage and computational efficiency remains unresolved. This creates an opportunity for targeted ensemble approaches that achieve comparable accuracy through strategic algorithm selection rather than exhaustive paradigm coverage.
+The effectiveness of probabilistic weighting over prediction-based combination was demonstrated through comprehensive ablation studies \citep[p.~22, Figure~12]{cawpe}, showing consistent improvements across accuracy, AUC, and negative log-likelihood metrics. When applied to HIVE-COTE, CAWPE improved overall accuracy from 85.97\% to 87.16\% \citep[p.~19]{cawpe}, representing a substantial 1.2 percentage point gain through improved combination methodology alone.
+
+Recent advances in ensemble combination include possibilistic approaches based on conformal prediction theory. \citet[p.~4]{ensemble-predictors} introduced Ensemble Predictors that use three combination rules: $\Gamma_{min}$, $\Gamma_{max}$, and $\Gamma_w$, each with different validity guarantees. The $\Gamma_{max}$ predictor provides conservative validity with $P_r(y \notin \Gamma_{max}^{\varepsilon}) = C_Q(\varepsilon,\ldots,\varepsilon) \leq \varepsilon$ \citep[Theorem~4, p.~5]{ensemble-predictors}, offering theoretical performance bounds absent from traditional ensemble approaches.
+
+\subsection{Efficient Algorithm Development}
+
+\subsubsection{The Convolutional Kernel Revolution}
+
+A paradigm shift occurred with ROCKET \citep[p.~1455]{rocket}, which demonstrated that ``simple linear classifiers using random convolutional kernels achieve state-of-the-art accuracy with a fraction of the computational expense of existing methods.'' ROCKET's innovation challenged the prevailing assumption that computational complexity was necessary for high accuracy in TSC, achieving competitive performance with HIVE-COTE while requiring less than 2 hours for training across all 85 UCR datasets compared to days for existing methods.
+
+The foundation enabled rapid algorithmic development within the ROCKET family. MiniROCKET \cite{minirocket} achieved near-deterministic performance with 75x speed improvements through binary kernel weights and bias sampling strategies. MultiROCKET \cite{multirocket} extended the approach with multiple pooling operators and first-order difference transformations, demonstrating that computational efficiency and representational diversity are not mutually exclusive objectives.
+
+\subsubsection{Targeted Algorithmic Specialization}
+
+Building on ROCKET's computational efficiency principles, recent work has explored targeted algorithms designed for specific representational strengths. \citet[p.~1780]{hydra} introduced Hydra, which bridges dictionary and convolutional approaches through ``competing convolutional kernels'' organized into groups where only the closest pattern match contributes to feature representation. This design combines ROCKET's computational efficiency with dictionary methods' interpretability advantages, achieving accuracy comparable to several state-of-the-art methods while maintaining fast training times.
+
+Simultaneously, \citet[p.~2377]{quant} developed Quant, representing an ``attempt to condense various [interval-based] approaches into their essential ingredients.'' Quant's theoretical foundation rests on the principle that ``class can be distinguished based on the distribution of values in different locations of a time series,'' providing a complementary perspective to pattern-based approaches. Using only quantile features and fixed dyadic intervals, Quant achieves state-of-the-art accuracy with total compute time of less than 15 minutes across 142 UCR datasets.
+
+\subsection{Complementarity and Meta-Learning}
+
+\subsubsection{Algorithm Selection and Meta-Learning}
+
+The challenge of selecting appropriate TSC algorithms for specific problems has motivated meta-learning approaches that leverage historical performance patterns. The TSC-AutoML framework \citep{tsc-automl} addresses the Combined Algorithm Selection and Hyperparameter optimization (CASH) problem through a dual insurance strategy combining experience-driven meta-learners with warm-start optimization. Using 32 meta-features across time, frequency, and statistical domains \citep[Table~I, p.~8]{tsc-automl}, the approach achieves 68\% top-1 algorithm selection accuracy compared to 8-28\% for baseline AutoML methods \citep[Table~IV, p.~10]{tsc-automl}.
+
+The meta-learning perspective provides crucial insights for ensemble design by revealing which algorithmic approaches excel under different problem characteristics. The systematic categorization of TSC algorithms into complementary families \citep[Table~II, p.~9]{tsc-automl} demonstrates that ``no machine learning algorithm will ever be superior to any other algorithm in every aspect and tasks,'' reinforcing the theoretical basis for ensemble approaches that combine diverse algorithmic strengths.
+
+\subsubsection{Complementarity Analysis Frameworks}
+
+Understanding algorithmic complementarity requires systematic analysis of when and why different approaches succeed. The paradigm diversity principle established by \citet[p.~637]{tsc-bakeoff} provides empirical evidence for complementarity through cross-paradigm performance analysis, showing that algorithms optimized for one problem type may perform 5-15\% worse on problems suited to different paradigms \citep[Table~11, p.~647]{tsc-bakeoff}.
+
+Modern approaches to complementarity analysis leverage comprehensive feature characterizations to understand algorithm-problem relationships. The systematic extraction of 794 time-series features using established libraries enables principled analysis of which problem characteristics favor different algorithmic approaches, providing a foundation for targeted ensemble construction that goes beyond ad-hoc combination strategies.
+
+\subsection{Evaluation Methodology and Computational Considerations}
+
+\subsubsection{Dataset Selection and Benchmarking Bias}
+
+Traditional TSC evaluation has relied heavily on the UCR archive, but recent work has identified critical limitations in this approach. \citet[p.~5]{less-is-more} demonstrated that the UCR benchmark fails key quality requirements for non-redundancy, with clusters containing highly uneven dataset distributions (65, 53, 7, 68, 55, and 1 unique datasets respectively). This bias means that ``including more datasets from the same part of the landscape is in favor of some of the algorithms and the statistical outcome is questionable'' \citep[p.~6]{less-is-more}.
+
+The solution involves landscape analysis using comprehensive feature extraction (794 tsfresh features \citep[p.~3]{less-is-more}) followed by uniform sampling from identified problem clusters rather than using all available datasets. Bootstrap validation with 30 repetitions and 90\% representativeness thresholds \citep[p.~5-6]{less-is-more} provides more robust statistical comparisons than traditional approaches.
+
+\subsubsection{Large-Scale Evaluation Frameworks}
+
+The computational challenge of comprehensive ensemble evaluation, exemplified by HIVE-COTE 2.0's requirement of 340+ hours for complete training \citep[Table~4, p.~17]{hive-cote-2}, necessitates careful consideration of evaluation scalability. While contractable training achieves 98\% of full accuracy in 4 hours and 99\% in 12 hours \citep[p.~27]{hive-cote-2}, the fundamental tension between comprehensive coverage and computational efficiency remains unresolved.
+
+This creates an opportunity for targeted ensemble approaches that achieve comparable accuracy through strategic algorithm selection rather than exhaustive paradigm coverage, particularly when evaluated on modern large-scale benchmarks that better reflect real-world computational constraints and data volumes.
 
 \section{Method}\label{sec3}
 
