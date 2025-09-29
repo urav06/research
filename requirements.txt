@@ -1,0 +1,17 @@
+# Core scientific computing
+numpy
+torch
+scikit-learn
+pandas
+
+# Visualization
+matplotlib
+
+# Progress bars
+tqdm
+
+# Data loading
+huggingface-hub
+
+# Time series classification
+aeon-toolkit

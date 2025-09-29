@@ -1,6 +1,6 @@
 """Dataset loading and management for MONSTER repository with lazy loading."""
 
-from typing import Tuple, Literal, Union
+from typing import Tuple, Literal, Union, Optional
 
 import numpy as np
 import torch
@@ -14,21 +14,22 @@ class MonsterDataset:
     
     def __init__(
         self, name: str, fold: int = 0, train_pct: float = 100.0,
-        test_pct: float = 100.0, random_state: int = 42
+        test_pct: float = 100.0, random_state: int = 42,
+        cache_dir: Optional[str] = None
     ):
-        
-        self.name = name
-        self.fold = fold
-        self.train_pct = train_pct
-        self.test_pct = test_pct
-        self.random_state = random_state
-        
+        self.name           = name
+        self.fold           = fold
+        self.train_pct      = train_pct
+        self.test_pct       = test_pct
+        self.random_state   = random_state
+        self.cache_dir      = cache_dir
+
         # Lazy loaded paths and indices
-        self._downloaded = False
-        self._x_path = None
-        self._y_path = None
+        self._downloaded    = False
+        self._x_path        = None
+        self._y_path        = None
         self._train_indices = None
-        self._test_indices = None
+        self._test_indices  = None
         
         self._download_files()
 
@@ -40,17 +41,20 @@ class MonsterDataset:
             self._x_path = hf_hub_download(
                 repo_id=repo_id, 
                 filename=f"{self.name}_X.npy", 
-                repo_type="dataset"
+                repo_type="dataset",
+                cache_dir=self.cache_dir
             )
             self._y_path = hf_hub_download(
                 repo_id=repo_id, 
                 filename=f"{self.name}_y.npy", 
-                repo_type="dataset"
+                repo_type="dataset",
+                cache_dir=self.cache_dir
             )
             test_index_path = hf_hub_download(
                 repo_id=repo_id, 
                 filename=f"test_indices_fold_{self.fold}.txt", 
-                repo_type="dataset"
+                repo_type="dataset",
+                cache_dir=self.cache_dir
             )
             
             # Load indices and apply sampling
