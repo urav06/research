@@ -151,7 +151,7 @@ The evolution of time series classification has been characterized by the emerge
 
 \subsection{Time Series Classification Paradigms}
 
-The comprehensive evaluation by \citet[p.~610]{tsc-bakeoff} established a fundamental taxonomic framework for TSC algorithms, identifying five primary paradigms based on their discriminatory features. \textbf{Whole series methods} compare time series as vectors or using elastic distance measures, with Dynamic Time Warping serving as the canonical example. \textbf{Interval-based methods} select phase-dependent segments of the series, exemplified by Time Series Forest \cite{deng-2013} which extracts features from random intervals. \textbf{Shapelet-based approaches} discover phase-independent discriminative subsequences \cite{time_series_shapelets}, while \textbf{dictionary methods} build classification models on histograms of recurring pattern frequencies \cite{schaefer-2015}. Finally, \textbf{combination approaches} integrate multiple paradigms to leverage complementary information sources.
+The comprehensive evaluation by \citet[p.~610]{tsc-bakeoff} established a fundamental taxonomic framework for TSC algorithms, identifying five primary paradigms based on their discriminatory features. \textbf{Whole series methods} compare time series as vectors or using elastic distance measures, with Dynamic Time Warping serving as the canonical example. \textbf{Interval-based methods} select phase-dependent segments of the series and extract statistical features from these intervals. \textbf{Shapelet-based approaches} discover phase-independent discriminative subsequences \cite{time_series_shapelets}, while \textbf{dictionary methods} build classification models on histograms of recurring pattern frequencies. Finally, \textbf{combination approaches} integrate multiple paradigms to leverage complementary information sources.
 
 This paradigm diversity reflects a fundamental principle established by \citet[p.~637]{tsc-bakeoff}: ``no one representation will dominate'' across the diverse range of problem types encountered in practice. Their rigorous evaluation of 18 algorithms across 85 datasets revealed that performance differences between optimal and suboptimal paradigms can range from 5-15\% \citep[p.~647, Table~11]{tsc-bakeoff}, demonstrating substantial gains achievable through intelligent paradigm combination.
 
@@ -219,13 +219,62 @@ The computational challenge of comprehensive ensemble evaluation, exemplified by
 
 This creates an opportunity for targeted ensemble approaches that achieve comparable accuracy through strategic algorithm selection rather than exhaustive paradigm coverage, particularly when evaluated on modern large-scale benchmarks that better reflect real-world computational constraints and data volumes.
 
-\section{Method}\label{sec3}
+\section{Methodology}\label{sec3}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+We develop a targeted ensemble approach that combines Hydra and Quant algorithms through systematic complementarity analysis and principled combination strategies. This methodology addresses the computational efficiency limitations of comprehensive ensembles while maintaining competitive accuracy through strategic algorithm selection.
 
-\section{Experimental Setup}\label{sec4}
+\subsection{Complementarity Analysis}
+% Analysis framework to understand when and why Hydra vs Quant excel on different problem types
+\begin{itemize}
+\item Meta-feature extraction using established time series characterization methods to identify problem-algorithm relationships
+\item Error pattern analysis to quantify the degree of complementarity between base learners across different dataset characteristics
+\end{itemize}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+\subsection{Base Algorithm Configuration}
+% Setup and optimization of individual Hydra and Quant components
+\begin{itemize}
+\item Hydra parameterization with competing kernel groups and dilation strategies for pattern-based discrimination
+\item Quant configuration with dyadic interval decomposition and quantile feature extraction for distributional analysis
+\end{itemize}
+
+\subsection{Ensemble Combination Framework}
+% Methods for combining predictions from complementary base learners
+\begin{itemize}
+\item CAWPE-based probabilistic weighting using cross-validation accuracy estimates with exponential emphasis ($\alpha=4$)
+\item Performance comparison across combination strategies to identify optimal integration approaches
+\end{itemize}
+
+\section{Experimental Design}\label{sec4}
+
+Our experimental evaluation follows established TSC benchmarking protocols while addressing dataset selection bias and computational efficiency considerations. The design enables comprehensive assessment of ensemble performance across diverse problem types and scales.
+
+\subsection{Datasets and Evaluation Protocol}
+% Standard benchmarking approach with bias-aware dataset selection
+\begin{itemize}
+\item UCR time series archive (112 datasets) with stratified resampling for robust statistical analysis
+\item Dataset selection methodology following landscape analysis principles to ensure representative problem coverage
+\end{itemize}
+
+\subsection{Performance Metrics}
+% Comprehensive evaluation across accuracy and efficiency dimensions
+\begin{itemize}
+\item Classification performance: accuracy, balanced accuracy, AUROC, and negative log-likelihood for probabilistic evaluation
+\item Computational efficiency: training time, inference time, and memory usage for practical applicability assessment
+\end{itemize}
+
+\subsection{Baseline Comparisons}
+% Systematic comparison against individual algorithms and state-of-the-art ensembles
+\begin{itemize}
+\item Individual algorithm performance: Hydra alone and Quant alone to quantify ensemble gains
+\item State-of-the-art comparison: HIVE-COTE 2.0, MultiROCKET variants, and other leading TSC methods
+\end{itemize}
+
+\subsection{Statistical Analysis}
+% Rigorous statistical evaluation following TSC best practices
+\begin{itemize}
+\item Wilcoxon signed-rank tests with Holm correction for multiple comparisons across algorithm pairs
+\item Critical difference diagrams and Multiple Comparison Matrix (MCM) analysis for comprehensive performance visualization
+\end{itemize}
 
 \section{Results}\label{sec5}
 
