@@ -25,6 +25,21 @@ sys.path.extend([
 
 print(f"🔧 Python path updated with {len(sys.path)} entries")
 
+# Debug: Check if expected files exist
+import os
+quant_file = os.path.join(current_dir, 'quant/code/quant.py')
+hydra_file = os.path.join(current_dir, 'hydra/code/hydra.py')
+print(f"🔍 Quant file exists: {os.path.exists(quant_file)} at {quant_file}")
+print(f"🔍 Hydra file exists: {os.path.exists(hydra_file)} at {hydra_file}")
+
+# Debug: Check what quant module Python finds
+try:
+    import quant
+    print(f"🔍 Found quant module at: {quant.__file__ if hasattr(quant, '__file__') else 'unknown'}")
+    print(f"🔍 Quant module contents: {dir(quant)}")
+except ImportError as e:
+    print(f"❌ Cannot import quant: {e}")
+
 from tsckit import Experiment, MonsterDataset, on_m3, M3_DATA_DIRECTORY, M3_RESULTS_DIRECTORY
 from tsckit.algorithms import (
     QuantOriginal, QuantAALTD2024,

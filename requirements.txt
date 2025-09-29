@@ -14,4 +14,4 @@ tqdm
 huggingface-hub
 
 # Time series classification
-aeon-toolkit
+aeon

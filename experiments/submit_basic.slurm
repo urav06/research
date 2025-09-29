@@ -21,7 +21,7 @@ module load python/3.9.15
 cd ~/research
 
 # Create/activate venv in scratch space (better filesystem compatibility)
-VENV_PATH="/scratch2/jt76/uman0001/tsc-venv"
+VENV_PATH="~/jt76_scratch2/urav/venv"
 
 if [ ! -d "$VENV_PATH" ]; then
     echo "Creating virtual environment in scratch space..."
