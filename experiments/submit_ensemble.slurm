@@ -36,7 +36,7 @@ echo "Starting ensemble comparison experiment..."
 
 # Multiple datasets example
 python experiments/run_ensemble_comparison.py \
-    --datasets Pedestrian PAMAP2 \
+    --datasets PAMAP2 \
     --train-pct 100 \
     --test-pct 100 \
     --cv-folds 5
