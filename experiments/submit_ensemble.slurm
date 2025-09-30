@@ -2,7 +2,7 @@
 #SBATCH --job-name=tsc-ensemble-compare
 #SBATCH --account=jt76
 #SBATCH --time=2:00:00
-#SBATCH --mem=16G
+#SBATCH --mem=64G
 #SBATCH --cpus-per-task=4
 #SBATCH --output=/scratch2/jt76/logs/%j_ensemble.out
 #SBATCH --error=/scratch2/jt76/logs/%j_ensemble.err
@@ -26,10 +26,19 @@ source "$VENV_PATH/bin/activate"
 
 # Run ensemble comparison experiment
 echo "Starting ensemble comparison experiment..."
+
+# Single dataset example
+# python experiments/run_ensemble_comparison.py \
+#     --datasets Pedestrian \
+#     --train-pct 50 \
+#     --test-pct 50 \
+#     --cv-folds 5
+
+# Multiple datasets example
 python experiments/run_ensemble_comparison.py \
-    --dataset Pedestrian \
-    --train-pct 50 \
-    --test-pct 50 \
+    --datasets Pedestrian PAMAP2 \
+    --train-pct 100 \
+    --test-pct 100 \
     --cv-folds 5
 
 echo "Job completed at: $(date)"

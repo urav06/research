@@ -36,7 +36,8 @@ from tsckit.algorithms import (
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Compare ensemble performance on M3')
-    parser.add_argument('--dataset', default='Pedestrian', help='Dataset name')
+    parser.add_argument('--datasets', nargs='+', default=['Pedestrian'],
+                       help='Dataset names (space-separated, e.g., Pedestrian PAMAP2)')
     parser.add_argument('--train-pct', type=float, default=10, help='Training data percentage')
     parser.add_argument('--test-pct', type=float, default=50, help='Test data percentage')
     parser.add_argument('--fold', type=int, default=0, help='Dataset fold')
@@ -50,7 +51,7 @@ def main():
     print("🔬 ENSEMBLE COMPARISON EXPERIMENT")
     print("="*60)
     print(f"📍 Environment: {'M3 HPC' if on_m3() else 'Local'}")
-    print(f"📊 Dataset: {args.dataset}")
+    print(f"📊 Datasets: {', '.join(args.datasets)}")
     print(f"📈 Train: {args.train_pct}%, Test: {args.test_pct}%")
     print(f"🔄 CV Folds for ensemble: {args.cv_folds}")
     print("="*60)
@@ -60,20 +61,22 @@ def main():
     results_dir = M3_RESULTS_DIRECTORY if on_m3() else None
 
     # Create experiment with descriptive name
-    exp_name = f"ensemble_comparison_{args.dataset}_{args.train_pct}pct_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    datasets_str = '_'.join(args.datasets[:2]) if len(args.datasets) > 1 else args.datasets[0]
+    exp_name = f"ensemble_comparison_{datasets_str}_{args.train_pct}pct_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     exp = Experiment(exp_name, output_dir=results_dir)
 
-    # Add dataset
-    print(f"\n📦 Loading dataset from: {cache_dir if cache_dir else 'HuggingFace Hub'}")
-    dataset = MonsterDataset(
-        args.dataset,
-        fold=args.fold,
-        train_pct=args.train_pct,
-        test_pct=args.test_pct,
-        cache_dir=cache_dir
-    )
-    print(dataset.info())
-    exp.add_dataset(dataset)
+    # Add all datasets
+    print(f"\n📦 Loading datasets from: {cache_dir if cache_dir else 'HuggingFace Hub'}")
+    for dataset_name in args.datasets:
+        dataset = MonsterDataset(
+            dataset_name,
+            fold=args.fold,
+            train_pct=args.train_pct,
+            test_pct=args.test_pct,
+            cache_dir=cache_dir
+        )
+        print(f"\n{dataset.info()}")
+        exp.add_dataset(dataset)
 
     # Configure algorithms
     print("\n🤖 Configuring algorithms...")
@@ -113,7 +116,8 @@ def main():
         print(f"  ✓ {algo.name}")
 
     # Run experiment
-    print(f"\n🚀 Running {len(algorithms)} algorithms...")
+    print(f"\n🚀 Running {len(algorithms)} algorithms on {len(args.datasets)} dataset(s)...")
+    print(f"Total combinations: {len(algorithms) * len(args.datasets)}")
     exp.run(save_predictions=True, verbose=True)
 
     # Analysis
