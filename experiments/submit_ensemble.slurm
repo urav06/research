@@ -15,7 +15,7 @@ echo "Date: $(date)"
 echo "Working Directory: $(pwd)"
 
 # Load modules
-module load python/3.9.15
+module load python/3
 
 # Navigate to project directory
 cd ~/research
