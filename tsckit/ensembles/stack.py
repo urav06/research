@@ -1,12 +1,13 @@
-from typing import List
+from typing import List, Union
 
 import numpy as np
 import torch
+import torch.nn as nn
 from numpy.typing import NDArray
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.model_selection import StratifiedKFold
 
-from tsckit.ensembles.core.hydra import HydraGPU
+from tsckit.ensembles.core.hydra import HydraGPU, HydraMultivariateGPU
 from tsckit.ensembles.core.quant import Quant
 from tsckit.ensembles.core.ridge import RidgeClassifier
 from tsckit.ensembles.core.utils import Dataset
@@ -16,16 +17,27 @@ class HydraQuantStacked:
 
     def __init__(
         self, n_folds: int = 5, hydra_k: int = 8, hydra_g: int = 64, hydra_seed: int = 42,
-        quant_depth: int = 6, quant_div: int = 4, n_estimators: int = 200
+        quant_depth: int = 6, quant_div: int = 4, n_estimators: int = 200, hydra_max_channels: int = 8
     ) -> None:
 
-        self.n_folds        : int   = n_folds
-        self.hydra_k        : int   = hydra_k
-        self.hydra_g        : int   = hydra_g
-        self.hydra_seed     : int   = hydra_seed
-        self.quant_depth    : int   = quant_depth
-        self.quant_div      : int   = quant_div
-        self.n_estimators   : int   = n_estimators
+        self.n_folds            : int   = n_folds
+        self.hydra_k            : int   = hydra_k
+        self.hydra_g            : int   = hydra_g
+        self.hydra_seed         : int   = hydra_seed
+        self.quant_depth        : int   = quant_depth
+        self.quant_div          : int   = quant_div
+        self.n_estimators       : int   = n_estimators
+        self.hydra_max_channels : int   = hydra_max_channels
+
+    def _get_hydra_model(self, dataset: Dataset) -> nn.Module:
+        """Auto-select appropriate Hydra model based on data dimensionality."""
+        n_channels   : int = dataset.shape[1] if len(dataset.shape) > 2 else 1
+        input_length : int = dataset.shape[-1]
+
+        if n_channels == 1:
+            return HydraGPU(input_length, self.hydra_k, self.hydra_g, self.hydra_seed)
+        else:
+            return HydraMultivariateGPU(input_length, n_channels, self.hydra_k, self.hydra_g, self.hydra_max_channels, self.hydra_seed)
 
     def _generate_hydra_logits(self, dataset: Dataset, n_classes: int, input_length: int) -> NDArray[np.float32]:
         """ Generate out-of-fold HYDRA logits. """
@@ -36,7 +48,7 @@ class HydraQuantStacked:
         for (train_idx, val_idx) in skf.split(np.arange(n_samples), dataset.Y):
             train_data  : Dataset           = dataset[train_idx]
             val_data    : Dataset           = dataset[val_idx]
-            hydra       : HydraGPU          = HydraGPU(input_length, self.hydra_k, self.hydra_g, self.hydra_seed)
+            hydra       : nn.Module         = self._get_hydra_model(train_data)
             ridge       : RidgeClassifier   = RidgeClassifier(transform=hydra)
             ridge.fit(train_data, num_classes=n_classes)
 
@@ -70,7 +82,7 @@ class HydraQuantStacked:
 
         oof_logits = self._generate_hydra_logits(dataset, n_classes, input_length)
 
-        self.hydra_final = HydraGPU(input_length, self.hydra_k, self.hydra_g, self.hydra_seed)
+        self.hydra_final = self._get_hydra_model(dataset)
         self.ridge_final = RidgeClassifier(transform=self.hydra_final)
         self.ridge_final.fit(dataset, num_classes=n_classes)
 
