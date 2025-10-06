@@ -1,0 +1,19 @@
+{
+  "name": "large_benchmark",
+  "description": "Benchmark on large datasets (requires more memory/time)",
+  "datasets": [
+    "MosquitoSound",
+    "TimeSen2Crop",
+    "LenDB",
+    "Traffic",
+    "AudioMNIST"
+  ],
+  "algorithms": [
+    "QuantAALTD2024",
+    "HydraAALTD2024",
+    "HydraQuantStacked"
+  ],
+  "train_pct": 100.0,
+  "test_pct": 100.0,
+  "fold": 0
+}

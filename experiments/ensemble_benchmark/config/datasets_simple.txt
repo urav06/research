@@ -1,0 +1,4 @@
+# Small test datasets (3 datasets)
+UCIActivity
+WISDM
+Pedestrian

@@ -26,7 +26,7 @@ from hydra import Hydra, SparseScaler
 
 # AALTD2024 algorithm imports (paths must be set by notebook)
 from quant_aaltd import QuantClassifier, Quant as QuantTransform
-from hydra_gpu import HydraGPU
+from hydra_gpu import HydraGPU, HydraMultivariateGPU
 from ridge import RidgeClassifier
 from utils import BatchDataset, Dataset
 
@@ -83,35 +83,61 @@ class QuantAALTD2024(TSCAlgorithm):
 
 
 class HydraAALTD2024(TSCAlgorithm):
-    """Wrapper around AALTD2024 Hydra."""
+    """Wrapper around AALTD2024 Hydra with automatic univariate/multivariate detection."""
 
     DEFAULT_BATCH_SIZE = 256
 
-    def __init__(self, k: int = 8, g: int = 64, seed: int = 42):
+    def __init__(self, k: int = 8, g: int = 64, seed: int = 42, max_channels: int = 8):
         self.k = k
         self.g = g
         self.seed = seed
+        self.max_channels = max_channels
         self._hydra_transformer = None
         self._classifier = None
+        self._is_multivariate = False
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     def fit(self, dataset: MonsterDataset, **kwds) -> None:
         data = Dataset(path_X=dataset.x_path, path_Y=dataset.y_path, batch_size=kwds.get("batch_size", self.DEFAULT_BATCH_SIZE))
         data_tr = data[dataset.train_indices]
-        self._hydra_transformer = HydraGPU(input_length=data_tr.shape[-1], k=self.k, g=self.g, seed=self.seed).to(self.device)
+
+        # Auto-detect univariate vs multivariate
+        n_channels = data_tr.shape[1] if len(data_tr.shape) > 2 else 1
+        series_length = data_tr.shape[-1]
+        self._is_multivariate = n_channels > 1
+
+        # Select appropriate Hydra model
+        if self._is_multivariate:
+            self._hydra_transformer = HydraMultivariateGPU(
+                input_length=series_length,
+                num_channels=n_channels,
+                k=self.k,
+                g=self.g,
+                max_num_channels=self.max_channels,
+                seed=self.seed
+            ).to(self.device)
+        else:
+            self._hydra_transformer = HydraGPU(
+                input_length=series_length,
+                k=self.k,
+                g=self.g,
+                seed=self.seed
+            ).to(self.device)
+
         self._classifier = RidgeClassifier(transform=self._hydra_transformer, device=str(self.device))
         self._classifier.fit(data_tr, num_classes=len(data_tr.classes))
 
     def predict(self, dataset: MonsterDataset, batch_size=512) -> np.ndarray:
         if self._hydra_transformer is None or self._classifier is None:
             raise RuntimeError("Algorithm not fitted yet")
-    
+
         X_test, _ = dataset.get_arrays("test")
         return self._classifier._predict(X_test).argmax(-1).numpy()
 
     @property
     def name(self) -> str:
-        return f"HydraAALTD2024(k={self.k}, g={self.g}, seed={self.seed})"
+        variant = "Multivariate" if self._is_multivariate else "Univariate"
+        return f"HydraAALTD2024-{variant}(k={self.k}, g={self.g}, seed={self.seed})"
 
 
 class QuantOriginal(TSCAlgorithm):

@@ -1,0 +1,17 @@
+{
+  "name": "small_test",
+  "description": "Small-scale test on a few datasets to verify everything works",
+  "datasets": [
+    "UCIActivity",
+    "WISDM",
+    "Pedestrian"
+  ],
+  "algorithms": [
+    "QuantAALTD2024",
+    "HydraAALTD2024",
+    "HydraQuantStacked"
+  ],
+  "train_pct": 100.0,
+  "test_pct": 100.0,
+  "fold": 0
+}
