@@ -1,4 +1,0 @@
-# Small test datasets (3 datasets)
-CrowdSourced
-Opportunity
-FordChallenge

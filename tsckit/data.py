@@ -30,13 +30,17 @@ class MonsterDataset:
         self._y_path        = None
         self._train_indices = None
         self._test_indices  = None
-        
+
+    def _ensure_downloaded(self) -> None:
+        """Ensure dataset files are downloaded (called lazily on first access)."""
+        if self._downloaded:
+            return
         self._download_files()
 
     def _download_files(self) -> None:
         """Download dataset files from HuggingFace Hub."""
         repo_id = f"monster-monash/{self.name}"
-        
+
         try:
             self._x_path = hf_hub_download(
                 repo_id=repo_id, 
@@ -92,9 +96,7 @@ class MonsterDataset:
 
     def get_arrays(self, split: Literal["train", "test"], format: Literal["numpy", "torch"] = "numpy") -> Tuple[ArrayLike, ArrayLike]:
         """Load data arrays for the specified split."""
-
-        if not self._downloaded or self._x_path is None or self._y_path is None:
-            raise RuntimeError("Dataset not downloaded yet")
+        self._ensure_downloaded()
 
         X = np.load(self._x_path, mmap_mode="r")
         y = np.load(self._y_path, mmap_mode="r")
@@ -112,29 +114,25 @@ class MonsterDataset:
     @property
     def x_path(self) -> str:
         """Path to the X data file."""
-        if not self._downloaded or self._x_path is None:
-            raise RuntimeError("Dataset not downloaded yet")
+        self._ensure_downloaded()
         return self._x_path
-    
+
     @property
     def y_path(self) -> str:
         """Path to the y data file."""
-        if not self._downloaded or self._y_path is None:
-            raise RuntimeError("Dataset not downloaded yet")
+        self._ensure_downloaded()
         return self._y_path
 
     @property
     def train_indices(self) -> np.ndarray:
         """Indices of training samples."""
-        if not self._downloaded or self._train_indices is None:
-            raise RuntimeError("Dataset not downloaded yet")
+        self._ensure_downloaded()
         return self._train_indices
-    
+
     @property
     def test_indices(self) -> np.ndarray:
         """Indices of test samples."""
-        if not self._downloaded or self._test_indices is None:
-            raise RuntimeError("Dataset not downloaded yet")
+        self._ensure_downloaded()
         return self._test_indices
 
     def info(self) -> str:
