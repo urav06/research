@@ -77,29 +77,54 @@ def compute_feature_complementarity(hydra_feats, quant_feats):
 
     print(f"  Computing cross-correlation matrix ({n_hydra} x {n_quant})...")
 
+    # Remove constant features (zero variance)
+    hydra_std = hydra_feats.std(axis=0)
+    quant_std = quant_feats.std(axis=0)
+
+    hydra_valid = hydra_std > 1e-8
+    quant_valid = quant_std > 1e-8
+
+    hydra_clean = hydra_feats[:, hydra_valid]
+    quant_clean = quant_feats[:, quant_valid]
+
+    n_hydra_valid = hydra_clean.shape[1]
+    n_quant_valid = quant_clean.shape[1]
+
+    print(f"  Removed {n_hydra - n_hydra_valid} constant Hydra features, {n_quant - n_quant_valid} constant Quant features")
+
     # Cross-correlation: for each Hydra feature, find max correlation with any Quant feature
-    all_feats = np.hstack([hydra_feats, quant_feats])
+    all_feats = np.hstack([hydra_clean, quant_clean])
     corr_matrix = np.corrcoef(all_feats.T)
-    hydra_quant_block = corr_matrix[:n_hydra, n_hydra:]
+    hydra_quant_block = corr_matrix[:n_hydra_valid, n_hydra_valid:]
     max_corr_per_hydra = np.abs(hydra_quant_block).max(axis=1)
+
+    # Additional metric: median correlation (less sensitive to outliers)
+    median_corr_per_hydra = np.median(np.abs(hydra_quant_block), axis=1)
 
     print(f"  Computing CCA...")
 
-    # Canonical Correlation Analysis
-    n_components = min(10, n_hydra, n_quant, n_samples)
-    cca = CCA(n_components=n_components)
-    H_c, Q_c = cca.fit_transform(hydra_feats, quant_feats)
-    canonical_corrs = [pearsonr(H_c[:, i], Q_c[:, i])[0] for i in range(n_components)]
-    # Sort in descending order (CCA doesn't guarantee this)
-    canonical_corrs = sorted(canonical_corrs, reverse=True)
+    # Canonical Correlation Analysis with error handling
+    try:
+        n_components = min(10, n_hydra_valid, n_quant_valid, n_samples - 1)
+        cca = CCA(n_components=n_components, max_iter=500)
+        H_c, Q_c = cca.fit_transform(hydra_clean, quant_clean)
+        canonical_corrs = [abs(pearsonr(H_c[:, i], Q_c[:, i])[0]) for i in range(n_components)]
+        # Sort in descending order
+        canonical_corrs = sorted(canonical_corrs, reverse=True)
+    except Exception as e:
+        print(f"  WARNING: CCA failed: {e}")
+        canonical_corrs = [np.nan] * 10
 
     return {
         'subsample_size': n_samples,
         'n_features_hydra': n_hydra,
         'n_features_quant': n_quant,
-        'avg_max_cross_correlation': float(max_corr_per_hydra.mean()),
-        'std_max_cross_correlation': float(max_corr_per_hydra.std()),
-        'median_max_cross_correlation': float(np.median(max_corr_per_hydra)),
+        'n_features_hydra_valid': n_hydra_valid,
+        'n_features_quant_valid': n_quant_valid,
+        'avg_max_cross_correlation': float(np.nanmean(max_corr_per_hydra)),
+        'std_max_cross_correlation': float(np.nanstd(max_corr_per_hydra)),
+        'median_max_cross_correlation': float(np.nanmedian(max_corr_per_hydra)),
+        'avg_median_cross_correlation': float(np.nanmean(median_corr_per_hydra)),
         'cca_canonical_correlations': canonical_corrs,
     }
 
@@ -233,10 +258,11 @@ def run_complementarity_analysis(dataset_name):
     # Prepare test data as tensor
     X_test_tensor = torch.from_numpy(X_test).float()
 
-    # Subsample if dataset is too large (for computational efficiency)
-    n_subsample = min(10_000, len(X_test))
+    # Subsample if dataset is too large (for computational efficiency and memory)
+    # Reduce to 5000 to avoid memory issues with large correlation matrices
+    n_subsample = min(5_000, len(X_test))
     if n_subsample < len(X_test):
-        print(f"Subsampling {n_subsample:,}/{len(X_test):,} test samples...")
+        print(f"Subsampling {n_subsample:,}/{len(X_test):,} test samples (deterministic seed)...")
         subsample_idx = np.random.RandomState(42).choice(
             len(X_test), n_subsample, replace=False
         )
@@ -330,9 +356,12 @@ def run_complementarity_analysis(dataset_name):
         subsample_size=feature_metrics['subsample_size'],
         n_features_hydra=feature_metrics['n_features_hydra'],
         n_features_quant=feature_metrics['n_features_quant'],
+        n_features_hydra_valid=feature_metrics['n_features_hydra_valid'],
+        n_features_quant_valid=feature_metrics['n_features_quant_valid'],
         avg_max_cross_correlation=feature_metrics['avg_max_cross_correlation'],
         std_max_cross_correlation=feature_metrics['std_max_cross_correlation'],
         median_max_cross_correlation=feature_metrics['median_max_cross_correlation'],
+        avg_median_cross_correlation=feature_metrics['avg_median_cross_correlation'],
         cca_canonical_correlations=feature_metrics['cca_canonical_correlations'],
 
         # Prediction complementarity metrics
