@@ -4,7 +4,7 @@
 #SBATCH --time=4:00:00
 #SBATCH --mem=64G
 #SBATCH --cpus-per-task=8
-#SBATCH --array=0-1
+#SBATCH --array=0-8
 #SBATCH --output=/scratch2/jt76/logs/complementarity/%A_%a.out
 #SBATCH --error=/scratch2/jt76/logs/complementarity/%A_%a.err
 

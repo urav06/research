@@ -90,6 +90,8 @@ def compute_feature_complementarity(hydra_feats, quant_feats):
     cca = CCA(n_components=n_components)
     H_c, Q_c = cca.fit_transform(hydra_feats, quant_feats)
     canonical_corrs = [pearsonr(H_c[:, i], Q_c[:, i])[0] for i in range(n_components)]
+    # Sort in descending order (CCA doesn't guarantee this)
+    canonical_corrs = sorted(canonical_corrs, reverse=True)
 
     return {
         'subsample_size': n_samples,
