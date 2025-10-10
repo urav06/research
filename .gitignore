@@ -7,6 +7,10 @@ __pycache__/
 experiments_results/
 *.csv
 
+# Code Backups
+*_BAK/
+*.BAK
+
 # Jupyter Notebook
 .ipynb_checkpoints/
 
