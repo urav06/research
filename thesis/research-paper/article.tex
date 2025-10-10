@@ -151,7 +151,7 @@ The evolution of time series classification has been characterized by the emerge
 
 \subsection{Time Series Classification Paradigms}
 
-The comprehensive evaluation by \citet[p.~610]{tsc-bakeoff} established a fundamental taxonomic framework for TSC algorithms, identifying five primary paradigms based on their discriminatory features. \textbf{Whole series methods} compare time series as vectors or using elastic distance measures, with Dynamic Time Warping serving as the canonical example. \textbf{Interval-based methods} select phase-dependent segments of the series and extract statistical features from these intervals. \textbf{Shapelet-based approaches} discover phase-independent discriminative subsequences \cite{time_series_shapelets}, while \textbf{dictionary methods} build classification models on histograms of recurring pattern frequencies. Finally, \textbf{combination approaches} integrate multiple paradigms to leverage complementary information sources.
+The comprehensive evaluation by \citet[p.~610]{tsc-bakeoff} established a fundamental taxonomic framework for TSC algorithms, identifying five primary paradigms based on their discriminatory features. \textbf{Whole series methods} compare time series as vectors or using elastic distance measures, with Dynamic Time Warping serving as the canonical example. \textbf{Interval-based methods} select phase-dependent segments of the series and extract statistical features from these intervals. \textbf{Shapelet-based approaches} discover phase-independent discriminative subsequences \citep{time_series_shapelets}, while \textbf{dictionary methods} build classification models on histograms of recurring pattern frequencies. Finally, \textbf{combination approaches} integrate multiple paradigms to leverage complementary information sources.
 
 This paradigm diversity reflects a fundamental principle established by \citet[p.~637]{tsc-bakeoff}: ``no one representation will dominate'' across the diverse range of problem types encountered in practice. Their rigorous evaluation of 18 algorithms across 85 datasets revealed that performance differences between optimal and suboptimal paradigms can range from 5-15\% \citep[p.~647, Table~11]{tsc-bakeoff}, demonstrating substantial gains achievable through intelligent paradigm combination.
 
@@ -169,6 +169,8 @@ The first comprehensive ensemble approach in TSC was COTE (Collective of Transfo
 
 HIVE-COTE extended this approach through hierarchical architecture that addressed bias issues in flat ensemble structures \citep[p.~7]{hive-cote}. The key innovation was organizing ensembles into domain-specific modules, each providing a single weighted vote rather than allowing domains with more base learners to dominate the final decision. HIVE-COTE 2.0 \citep[p.~3]{hive-cote-2} further refined this architecture with five domains: dictionary-based TDE, interval-based DrCIF, convolution-based Arsenal, shapelet-based STC, and distance-based methods, achieving state-of-the-art accuracy through this comprehensive coverage.
 
+However, this comprehensive coverage requires substantial computational resources. HIVE-COTE 2.0 training on 112 UCR datasets requires over 340 hours, compared to under 3 hours for ROCKET \citep[Table~4, p.~3228-3229]{hive-cote-2}. Three factors contribute to this cost: individual components such as STC, TDE, and DrCIF involve computationally expensive operations; combining multiple such components in an ensemble compounds these costs; and several components cannot process data in batches, creating memory constraints when scaling to large datasets \citep[p.~3239]{hive-cote-2}. While contractable training reduces this burden, achieving 98\% of full accuracy in 4 hours \citep[p.~3237]{hive-cote-2}, the computational requirements remain substantial compared to modern efficient algorithms.
+
 \subsubsection{Ensemble Combination Strategies}
 
 Beyond architectural considerations, the method for combining ensemble predictions critically impacts performance. \citet[p.~3]{cawpe} introduced the Cross-validation Accuracy Weighted Probabilistic Ensemble (CAWPE) framework, which uses exponential weighting with parameter $\alpha=4$ to ``magnify differences in competence'' between base classifiers. The mathematical formulation $p(y=i|E,x) \propto \sum_{j=1}^k w_j^4 p_j(y=i|M_j,x)$ \citep[p.~8, Equation~1]{cawpe} significantly outperforms simple averaging or voting strategies.
@@ -177,19 +179,23 @@ The effectiveness of probabilistic weighting over prediction-based combination w
 
 Recent advances in ensemble combination include possibilistic approaches based on conformal prediction theory. \citet[p.~4]{ensemble-predictors} introduced Ensemble Predictors that use three combination rules: $\Gamma_{min}$, $\Gamma_{max}$, and $\Gamma_w$, each with different validity guarantees. The $\Gamma_{max}$ predictor provides conservative validity with $P_r(y \notin \Gamma_{max}^{\varepsilon}) = C_Q(\varepsilon,\ldots,\varepsilon) \leq \varepsilon$ \citep[Theorem~4, p.~5]{ensemble-predictors}, offering theoretical performance bounds absent from traditional ensemble approaches.
 
+While comprehensive ensembles like HIVE-COTE demonstrate the value of paradigm diversity, their computational requirements limit practical deployment. This challenge has motivated development of algorithms that achieve competitive accuracy with substantially reduced computational demands.
+
 \subsection{Efficient Algorithm Development}
 
 \subsubsection{The Convolutional Kernel Revolution}
 
 A paradigm shift occurred with ROCKET \citep[p.~1455]{rocket}, which demonstrated that ``simple linear classifiers using random convolutional kernels achieve state-of-the-art accuracy with a fraction of the computational expense of existing methods.'' ROCKET's innovation challenged the prevailing assumption that computational complexity was necessary for high accuracy in TSC, achieving competitive performance with HIVE-COTE while requiring less than 2 hours for training across all 85 UCR datasets compared to days for existing methods.
 
-The foundation enabled rapid algorithmic development within the ROCKET family. MiniROCKET \cite{minirocket} achieved near-deterministic performance with 75x speed improvements through binary kernel weights and bias sampling strategies. MultiROCKET \cite{multirocket} extended the approach with multiple pooling operators and first-order difference transformations, demonstrating that computational efficiency and representational diversity are not mutually exclusive objectives.
+The foundation enabled rapid algorithmic development within the ROCKET family. \citet{minirocket} achieved near-deterministic performance with 75x speed improvements through binary kernel weights and bias sampling strategies. \citet{multirocket} extended the approach with multiple pooling operators and first-order difference transformations, demonstrating that computational efficiency and representational diversity are not mutually exclusive objectives.
 
 \subsubsection{Targeted Algorithmic Specialization}
 
 Building on ROCKET's computational efficiency principles, recent work has explored targeted algorithms designed for specific representational strengths. \citet[p.~1780]{hydra} introduced Hydra, which bridges dictionary and convolutional approaches through ``competing convolutional kernels'' organized into groups where only the closest pattern match contributes to feature representation. This design combines ROCKET's computational efficiency with dictionary methods' interpretability advantages, achieving accuracy comparable to several state-of-the-art methods while maintaining fast training times.
 
 Simultaneously, \citet[p.~2377]{quant} developed Quant, representing an ``attempt to condense various [interval-based] approaches into their essential ingredients.'' Quant's theoretical foundation rests on the principle that ``class can be distinguished based on the distribution of values in different locations of a time series,'' providing a complementary perspective to pattern-based approaches. Using only quantile features and fixed dyadic intervals, Quant achieves state-of-the-art accuracy with total compute time of less than 15 minutes across 142 UCR datasets.
+
+These two algorithms address orthogonal aspects of time series classification. Hydra identifies which local patterns are present and dominant through competing kernels \citep[p.~1780]{hydra}, while Quant characterizes statistical distributions within intervals through quantile features \citep[p.~2377]{quant}. This representational diversity mirrors the paradigm coverage that underlies HIVE-COTE's performance, but through two efficient components rather than five complex ensembles. Whether targeted combination of Hydra and Quant can achieve substantial ensemble gains while maintaining computational efficiency for large-scale datasets has not been systematically investigated.
 
 \subsection{Complementarity and Meta-Learning}
 
@@ -215,9 +221,7 @@ The solution involves landscape analysis using comprehensive feature extraction 
 
 \subsubsection{Large-Scale Evaluation Frameworks}
 
-The computational challenge of comprehensive ensemble evaluation, exemplified by HIVE-COTE 2.0's requirement of 340+ hours for complete training \citep[Table~4, p.~17]{hive-cote-2}, necessitates careful consideration of evaluation scalability. While contractable training achieves 98\% of full accuracy in 4 hours and 99\% in 12 hours \citep[p.~27]{hive-cote-2}, the fundamental tension between comprehensive coverage and computational efficiency remains unresolved.
-
-This creates an opportunity for targeted ensemble approaches that achieve comparable accuracy through strategic algorithm selection rather than exhaustive paradigm coverage, particularly when evaluated on modern large-scale benchmarks that better reflect real-world computational constraints and data volumes.
+Evaluation on large-scale benchmarks requires protocols that balance comprehensive algorithmic comparison with computational feasibility. Modern benchmarks containing datasets with millions of instances or very long series present particular challenges for algorithms that cannot efficiently process data in batches or require extensive per-dataset training time. This practical consideration motivates development of algorithms that combine strong performance with computational efficiency, enabling thorough evaluation across diverse problem types while maintaining feasibility on large-scale data.
 
 \section{Methodology}\label{sec3}
 
