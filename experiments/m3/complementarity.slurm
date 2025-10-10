@@ -4,18 +4,17 @@
 #SBATCH --time=4:00:00
 #SBATCH --mem=128G
 #SBATCH --cpus-per-task=8
-#SBATCH --array=0-8
+#SBATCH --array=0-28
 #SBATCH --output=/scratch2/jt76/logs/complementarity/%A_%a.out
 #SBATCH --error=/scratch2/jt76/logs/complementarity/%A_%a.err
 
 # Complementarity analysis array job for M3
 # Usage: sbatch experiments/m3/complementarity.slurm
 #
-# Array indices:
-#   0: UCIActivity      4: LakeIce         8: LenDB
-#   1: WISDM            5: WISDM2
-#   2: FordChallenge    6: STEW
-#   3: InsectSound      7: Traffic
+# Array indices (29 datasets total):
+#   0-9:   Univariate datasets (Pedestrian, WhaleSounds, Traffic, AudioMNIST, etc.)
+#   10-28: Multivariate datasets (FordChallenge, S2Agri variants, Tiselac, etc.)
+# See complementarity.py DATASETS list for full mapping
 
 echo "=============================================================================="
 echo "COMPLEMENTARITY ANALYSIS - Array Job"

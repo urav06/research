@@ -36,19 +36,41 @@ from tsckit.algorithms import QuantAALTD2024, HydraAALTD2024
 # =============================================================================
 # DATASETS FOR COMPLEMENTARITY ANALYSIS
 # =============================================================================
-# Stratified selection: 3 small, 4 medium, 2 large
-# Coverage: univariate (3) + multivariate (6), diverse domains
+# All 29 MONSTER datasets (from datasets.json)
 
 DATASETS = [
-    "UCIActivity",     # 0: small, multivariate, sensor, 10k samples, 128 length, 6 classes
-    "WISDM",           # 1: small, multivariate, sensor, 17k samples, 100 length, 6 classes
-    "FordChallenge",   # 2: small, multivariate, sensor, 36k samples, 40 length, 2 classes
-    "InsectSound",     # 3: medium, univariate, audio, 50k samples, 600 length, 10 classes
-    "LakeIce",         # 4: medium, univariate, environmental, 129k samples, 161 length, 3 classes
-    "WISDM2",          # 5: medium, multivariate, sensor, 149k samples, 100 length, 6 classes
-    "STEW",            # 6: medium, multivariate, EEG, 28k samples, 256 length, 2 classes
-    "Traffic",         # 7: large, univariate, transportation, 1.4M samples, 24 length, 7 classes
-    "LenDB",           # 8: large, multivariate, sensor, 1.2M samples, 540 length, 2 classes
+    # Univariate datasets
+    "Pedestrian",              # 0
+    "WhaleSounds",             # 1
+    "Traffic",                 # 2
+    "AudioMNIST",              # 3
+    "AudioMNIST-DS",           # 4
+    "FruitFlies",              # 5
+    "InsectSound",             # 6
+    "MosquitoSound",           # 7
+    "CornellWhaleChallenge",   # 8
+    "LakeIce",                 # 9
+
+    # Multivariate datasets
+    "FordChallenge",           # 10
+    "S2Agri-10pc-17",          # 11
+    "S2Agri-10pc-34",          # 12
+    "S2Agri-17",               # 13
+    "S2Agri-34",               # 14
+    "Tiselac",                 # 15
+    "TimeSen2Crop",            # 16
+    "CrowdSourced",            # 17
+    "DREAMERA",                # 18
+    "DREAMERV",                # 19
+    "STEW",                    # 20
+    "Opportunity",             # 21
+    "PAMAP2",                  # 22
+    "Skoda",                   # 23
+    "UCIActivity",             # 24
+    "USCActivity",             # 25
+    "WISDM",                   # 26
+    "WISDM2",                  # 27
+    "LenDB",                   # 28
 ]
 
 
@@ -388,13 +410,13 @@ Available datasets (use --index):
 {chr(10).join(f'  {i}: {name}' for i, name in enumerate(DATASETS))}
 
 Example:
-  python complementarity.py --index 0  # Run UCIActivity
+  python complementarity.py --index 0  # Run Pedestrian
   python complementarity.py --index $SLURM_ARRAY_TASK_ID  # SLURM array job
         """
     )
 
     parser.add_argument('--index', type=int, required=True,
-                       help='Dataset index (0-8) for array job')
+                       help='Dataset index (0-28) for array job')
 
     args = parser.parse_args()
 
