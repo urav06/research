@@ -99,6 +99,14 @@ def compute_feature_complementarity(hydra_feats, quant_feats):
 
     print(f"  Computing cross-correlation matrix ({n_hydra} x {n_quant})...")
 
+    # Data validation: check for NaN/Inf
+    if not np.isfinite(hydra_feats).all():
+        print(f"  WARNING: Hydra features contain NaN/Inf, replacing with 0")
+        hydra_feats = np.nan_to_num(hydra_feats, nan=0.0, posinf=0.0, neginf=0.0)
+    if not np.isfinite(quant_feats).all():
+        print(f"  WARNING: Quant features contain NaN/Inf, replacing with 0")
+        quant_feats = np.nan_to_num(quant_feats, nan=0.0, posinf=0.0, neginf=0.0)
+
     # Remove constant features (zero variance)
     hydra_std = hydra_feats.std(axis=0)
     quant_std = quant_feats.std(axis=0)
@@ -115,26 +123,56 @@ def compute_feature_complementarity(hydra_feats, quant_feats):
     print(f"  Removed {n_hydra - n_hydra_valid} constant Hydra features, {n_quant - n_quant_valid} constant Quant features")
 
     # Cross-correlation: for each Hydra feature, find max correlation with any Quant feature
-    all_feats = np.hstack([hydra_clean, quant_clean])
-    corr_matrix = np.corrcoef(all_feats.T)
-    hydra_quant_block = corr_matrix[:n_hydra_valid, n_hydra_valid:]
-    max_corr_per_hydra = np.abs(hydra_quant_block).max(axis=1)
+    try:
+        all_feats = np.hstack([hydra_clean, quant_clean])
+        corr_matrix = np.corrcoef(all_feats.T)
 
-    # Additional metric: median correlation (less sensitive to outliers)
-    median_corr_per_hydra = np.median(np.abs(hydra_quant_block), axis=1)
+        # Validate correlation matrix
+        if not np.isfinite(corr_matrix).all():
+            print(f"  WARNING: Correlation matrix contains NaN/Inf")
+            corr_matrix = np.nan_to_num(corr_matrix, nan=0.0, posinf=1.0, neginf=-1.0)
+
+        hydra_quant_block = corr_matrix[:n_hydra_valid, n_hydra_valid:]
+        max_corr_per_hydra = np.abs(hydra_quant_block).max(axis=1)
+        median_corr_per_hydra = np.median(np.abs(hydra_quant_block), axis=1)
+    except Exception as e:
+        print(f"  WARNING: Correlation computation failed: {e}")
+        max_corr_per_hydra = np.full(n_hydra_valid, np.nan)
+        median_corr_per_hydra = np.full(n_hydra_valid, np.nan)
 
     print(f"  Computing CCA...")
 
-    # Canonical Correlation Analysis with error handling
+    # Canonical Correlation Analysis with robust error handling
     try:
-        n_components = min(10, n_hydra_valid, n_quant_valid, n_samples - 1)
-        cca = CCA(n_components=n_components, max_iter=500)
-        H_c, Q_c = cca.fit_transform(hydra_clean, quant_clean)
+        # Standardize features before CCA to improve numerical stability
+        from sklearn.preprocessing import StandardScaler
+        scaler_h = StandardScaler()
+        scaler_q = StandardScaler()
+        hydra_scaled = scaler_h.fit_transform(hydra_clean)
+        quant_scaled = scaler_q.fit_transform(quant_clean)
+
+        # Use fewer components for stability, max 5 instead of 10
+        n_components = min(5, n_hydra_valid, n_quant_valid, n_samples // 2)
+
+        if n_components < 1:
+            raise ValueError(f"Insufficient components: {n_components}")
+
+        cca = CCA(n_components=n_components, max_iter=500, tol=1e-4)
+        H_c, Q_c = cca.fit_transform(hydra_scaled, quant_scaled)
+
+        # Validate CCA output
+        if not np.isfinite(H_c).all() or not np.isfinite(Q_c).all():
+            raise ValueError("CCA produced NaN/Inf values")
+
         canonical_corrs = [abs(pearsonr(H_c[:, i], Q_c[:, i])[0]) for i in range(n_components)]
-        # Sort in descending order
         canonical_corrs = sorted(canonical_corrs, reverse=True)
+
+        # Pad to 10 values if fewer components
+        while len(canonical_corrs) < 10:
+            canonical_corrs.append(np.nan)
+
     except Exception as e:
-        print(f"  WARNING: CCA failed: {e}")
+        print(f"  WARNING: CCA failed ({type(e).__name__}): {e}")
         canonical_corrs = [np.nan] * 10
 
     return {
@@ -294,23 +332,49 @@ def run_complementarity_analysis(dataset_name):
         X_subsample = X_test_tensor
 
     # Extract Hydra features
-    print("Extracting Hydra features...")
-    device = hydra._hydra_transformer.W.device  # Get model device
-    X_subsample_device = X_subsample.to(device)
+    try:
+        print("Extracting Hydra features...")
+        device = hydra._hydra_transformer.W.device  # Get model device
+        X_subsample_device = X_subsample.to(device)
 
-    with torch.no_grad():
-        hydra_feats = hydra._hydra_transformer(X_subsample_device)
+        with torch.no_grad():
+            hydra_feats = hydra._hydra_transformer(X_subsample_device)
 
-    print(f"  Shape: {hydra_feats.shape}")
+        print(f"  Shape: {hydra_feats.shape}")
+
+        # Validate Hydra features
+        if not torch.isfinite(hydra_feats).all():
+            print(f"  WARNING: Hydra features contain NaN/Inf")
+
+    except Exception as e:
+        print(f"  ERROR: Hydra feature extraction failed: {e}")
+        raise
 
     # Extract Quant features
-    print("Extracting Quant features...")
-    quant_feats = quant._quant_classifier.transform.transform(X_subsample)
-    print(f"  Shape: {quant_feats.shape}\n")
+    try:
+        print("Extracting Quant features...")
+        quant_feats = quant._quant_classifier.transform.transform(X_subsample)
+        print(f"  Shape: {quant_feats.shape}\n")
+
+        # Validate Quant features
+        if isinstance(quant_feats, torch.Tensor):
+            if not torch.isfinite(quant_feats).all():
+                print(f"  WARNING: Quant features contain NaN/Inf")
+        else:
+            if not np.isfinite(quant_feats).all():
+                print(f"  WARNING: Quant features contain NaN/Inf")
+
+    except Exception as e:
+        print(f"  ERROR: Quant feature extraction failed: {e}")
+        raise
 
     # Compute feature complementarity
-    print("Computing feature complementarity metrics...")
-    feature_metrics = compute_feature_complementarity(hydra_feats, quant_feats)
+    try:
+        print("Computing feature complementarity metrics...")
+        feature_metrics = compute_feature_complementarity(hydra_feats, quant_feats)
+    except Exception as e:
+        print(f"  ERROR: Feature complementarity computation failed: {e}")
+        raise
 
     print(f"\nFeature Complementarity Results:")
     print(f"  Avg max cross-correlation: {feature_metrics['avg_max_cross_correlation']:.4f}")

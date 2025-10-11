@@ -2,7 +2,7 @@
 #SBATCH --job-name=complementarity
 #SBATCH --account=jt76
 #SBATCH --time=4:00:00
-#SBATCH --mem=128G
+#SBATCH --mem=256G
 #SBATCH --cpus-per-task=8
 #SBATCH --array=0-28
 #SBATCH --output=/scratch2/jt76/logs/complementarity/%A_%a.out
