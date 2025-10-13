@@ -2,16 +2,19 @@
 #SBATCH --job-name=ensemble-benchmark
 #SBATCH --account=jt76
 #SBATCH --time=4:00:00
-#SBATCH --mem=64G
+#SBATCH --mem=256G
 #SBATCH --cpus-per-task=8
-#SBATCH --array=0-3
+#SBATCH --array=0-10
 #SBATCH --output=/scratch2/jt76/logs/ensemble/%A_%a.out
 #SBATCH --error=/scratch2/jt76/logs/ensemble/%A_%a.err
 
 # Ensemble benchmark array job for M3
 # Usage: sbatch experiments/m3/run.slurm
 #
-# IMPORTANT: Update --array above to match experiment count
+# 11 experiments total (indices 0-10), one per successful MONSTER dataset:
+#   0: FordChallenge,  1: InsectSound,    2: LakeIce,       3: Pedestrian
+#   4: S2Agri-10pc-34, 5: Tiselac,        6: Traffic,       7: UCIActivity
+#   8: USCActivity,    9: WISDM,         10: WISDM2
 # Run: python experiments/m3/benchmark.py --count
 
 echo "=============================================================================="

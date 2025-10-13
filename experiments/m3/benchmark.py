@@ -57,31 +57,30 @@ ensemble_dataleak_default = HydraQuantStackedAALTD2024(
 # Each experiment can have MULTIPLE datasets and MULTIPLE algorithms
 # The experiment runs ALL (dataset × algorithm) pairs
 
+# These are the 11 datasets that succeeded in complementarity analysis
+# (out of 29 total MONSTER datasets)
+SUCCESSFUL_DATASETS = [
+    "FordChallenge",      # 0 - Multivariate, high feature complementarity (0.020)
+    "InsectSound",        # 1 - Univariate, high oracle gain (7.1%)
+    "LakeIce",            # 2 - Univariate, very high accuracy baseline (99.7%)
+    "Pedestrian",         # 3 - Univariate, 82 classes
+    "S2Agri-10pc-34",     # 4 - Multivariate, largest dataset (4.6M train)
+    "Tiselac",            # 5 - Multivariate
+    "Traffic",            # 6 - Univariate, moderate oracle gain (5.2%)
+    "UCIActivity",        # 7 - Multivariate, Hydra wins
+    "USCActivity",        # 8 - Multivariate, HIGHEST oracle gain (12.2%)
+    "WISDM",              # 9 - Multivariate
+    "WISDM2",             # 10 - Multivariate, low feature complementarity (0.404)
+]
+
 EXPERIMENTS = [
     Experiment(
-        name="benchmark_UCIActivity",
-        datasets=[MonsterDataset("UCIActivity", cache_dir=get_cache_dir())],
-        algorithms=[default_quant_aaltd, default_hydra_aaltd, ensemble_default, ensemble_dataleak_default],
-        output_dir=get_results_dir()
-    ),
-    Experiment(
-        name="benchmark_CrowdSourced",
-        datasets=[MonsterDataset("CrowdSourced", cache_dir=get_cache_dir())],
-        algorithms=[default_quant_aaltd, default_hydra_aaltd, ensemble_default, ensemble_dataleak_default],
-        output_dir=get_results_dir()
-    ),
-    Experiment(
-        name="benchmark_Skoda",
-        datasets=[MonsterDataset("Skoda", cache_dir=get_cache_dir())],
-        algorithms=[default_quant_aaltd, default_hydra_aaltd, ensemble_default, ensemble_dataleak_default],
-        output_dir=get_results_dir()
-    ),
-    Experiment(
-        name="benchmark_Opportunity",
-        datasets=[MonsterDataset("Opportunity", cache_dir=get_cache_dir())],
+        name=f"benchmark_{dataset}",
+        datasets=[MonsterDataset(dataset, cache_dir=get_cache_dir())],
         algorithms=[default_quant_aaltd, default_hydra_aaltd, ensemble_default, ensemble_dataleak_default],
         output_dir=get_results_dir()
     )
+    for dataset in SUCCESSFUL_DATASETS
 ]
 
 
