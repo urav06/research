@@ -39,38 +39,17 @@ from tsckit.algorithms import QuantAALTD2024, HydraAALTD2024
 # All 29 MONSTER datasets (from datasets.json)
 
 DATASETS = [
-    # Univariate datasets
-    "Pedestrian",              # 0
-    "WhaleSounds",             # 1
-    "Traffic",                 # 2
-    "AudioMNIST",              # 3
-    "AudioMNIST-DS",           # 4
-    "FruitFlies",              # 5
-    "InsectSound",             # 6
-    "MosquitoSound",           # 7
-    "CornellWhaleChallenge",   # 8
-    "LakeIce",                 # 9
-
-    # Multivariate datasets
-    "FordChallenge",           # 10
-    "S2Agri-10pc-17",          # 11
-    "S2Agri-10pc-34",          # 12
-    "S2Agri-17",               # 13
-    "S2Agri-34",               # 14
-    "Tiselac",                 # 15
-    "TimeSen2Crop",            # 16
-    "CrowdSourced",            # 17
-    "DREAMERA",                # 18
-    "DREAMERV",                # 19
-    "STEW",                    # 20
-    "Opportunity",             # 21
-    "PAMAP2",                  # 22
-    "Skoda",                   # 23
-    "UCIActivity",             # 24
-    "USCActivity",             # 25
-    "WISDM",                   # 26
-    "WISDM2",                  # 27
-    "LenDB",                   # 28
+    "FordChallenge",      # 0 - Multivariate, high feature complementarity (0.020)
+    "InsectSound",        # 1 - Univariate, high oracle gain (7.1%)
+    "LakeIce",            # 2 - Univariate, very high accuracy baseline (99.7%)
+    "Pedestrian",         # 3 - Univariate, 82 classes
+    "S2Agri-10pc-34",     # 4 - Multivariate, largest dataset (4.6M train)
+    "Tiselac",            # 5 - Multivariate
+    "Traffic",            # 6 - Univariate, moderate oracle gain (5.2%)
+    "UCIActivity",        # 7 - Multivariate, Hydra wins
+    "USCActivity",        # 8 - Multivariate, HIGHEST oracle gain (12.2%)
+    "WISDM",              # 9 - Multivariate
+    "WISDM2",             # 10 - Multivariate, low feature complementarity (0.404)
 ]
 
 
