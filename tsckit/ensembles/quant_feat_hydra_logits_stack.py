@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Union
 
 import numpy as np
 import torch
@@ -13,7 +13,15 @@ from tsckit.ensembles.core.ridge import RidgeClassifier
 from tsckit.ensembles.core.utils import Dataset
 
 
-class HydraQuantStacked:
+class QuantFeatHydraLogitsStack:
+    """Stacked ensemble: Quant features + Hydra OOF logits → ExtraTrees meta-learner.
+
+    Architecture:
+    - Level 1: Quant features (quantile-based intervals) + Hydra OOF logits (CV-based)
+    - Level 2: ExtraTrees meta-learner combines both representations
+
+    Key design: Uses out-of-fold predictions for Hydra to prevent data leakage.
+    """
 
     def __init__(
         self, n_folds: int = 5, hydra_k: int = 8, hydra_g: int = 64, hydra_seed: int = 42,
@@ -61,7 +69,7 @@ class HydraQuantStacked:
         X_full = np.vstack([X for X, _ in dataset]).astype(np.float32)
         return self.quant.fit_transform(torch.from_numpy(X_full), dataset.Y).cpu().numpy()
 
-    def fit(self, dataset: Dataset) -> 'HydraQuantStacked':
+    def fit(self, dataset: Dataset) -> 'QuantFeatHydraLogitsStack':
         """Fit the ensemble on training dataset."""
         n_classes       : int   = len(dataset.classes)
         n_channels      : int   = dataset.shape[1] if len(dataset.shape) > 2 else 1
@@ -77,7 +85,7 @@ class HydraQuantStacked:
 
         # Extract QUANT features
         self.quant                  = Quant(self.quant_depth, self.quant_div)
-        quant_features : NDArray    = self._extract_quant_features(dataset)
+        quant_features  : NDArray   = self._extract_quant_features(dataset)
 
         # Fit final classifier on stacked features
         stacked         : NDArray   = np.hstack([quant_features, oof_logits])

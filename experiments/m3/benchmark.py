@@ -22,8 +22,12 @@ from tsckit import Experiment, MonsterDataset, get_cache_dir, get_results_dir
 from tsckit.algorithms import (
     QuantAALTD2024,
     HydraAALTD2024,
-    HydraQuantStackedAALTD2024,
-    HydraQuantStacked,
+    QuantFeatHydraLogitsStack,
+    QuantFeatHydraLogitsRidge,
+    QuantHydraLogitsStack,
+    QuantHydraFeaturesConcatRidge,
+    QuantHydraFeaturesConcatExtraTrees,
+    CAWPEnsemble,
 )
 
 
@@ -33,7 +37,11 @@ from tsckit.algorithms import (
 
 default_quant_aaltd = QuantAALTD2024(num_estimators=200)
 default_hydra_aaltd = HydraAALTD2024(k=8, g=64, seed=42)
-ensemble_default = HydraQuantStacked(
+
+# === STACKING ENSEMBLES (use OOF predictions) ===
+
+# Quant features + Hydra OOF logits → ExtraTrees
+ensemble_qfeat_hlogits_et = QuantFeatHydraLogitsStack(
     n_folds=5,
     hydra_k=8,
     hydra_g=64,
@@ -42,11 +50,60 @@ ensemble_default = HydraQuantStacked(
     quant_div=4,
     n_estimators=200
 )
-ensemble_dataleak_default = HydraQuantStackedAALTD2024(
+
+# Quant features + Hydra OOF logits → Ridge
+ensemble_qfeat_hlogits_ridge = QuantFeatHydraLogitsRidge(
+    n_folds=5,
     hydra_k=8,
     hydra_g=64,
     hydra_seed=42,
-    quant_estimators=200
+    quant_depth=6,
+    quant_div=4
+)
+
+# Quant OOF probs + Hydra OOF logits → ExtraTrees (symmetric, expensive)
+ensemble_dual_oof = QuantHydraLogitsStack(
+    n_folds=5,
+    hydra_k=8,
+    hydra_g=64,
+    hydra_seed=42,
+    quant_depth=6,
+    quant_div=4,
+    n_estimators=200
+)
+
+# === FEATURE CONCATENATION ENSEMBLES (no OOF needed) ===
+
+# Quant features + Hydra features → Ridge
+ensemble_feat_concat_ridge = QuantHydraFeaturesConcatRidge(
+    hydra_k=8,
+    hydra_g=64,
+    hydra_seed=42,
+    quant_depth=6,
+    quant_div=4
+)
+
+# Quant features + Hydra features → ExtraTrees
+ensemble_feat_concat_et = QuantHydraFeaturesConcatExtraTrees(
+    hydra_k=8,
+    hydra_g=64,
+    hydra_seed=42,
+    quant_depth=6,
+    quant_div=4,
+    n_estimators=200
+)
+
+# === WEIGHTED AVERAGING ENSEMBLE ===
+
+# CAWPE: Accuracy-weighted probability averaging (no meta-learner)
+ensemble_cawpe = CAWPEnsemble(
+    hydra_k=8,
+    hydra_g=64,
+    hydra_seed=42,
+    quant_depth=6,
+    quant_div=4,
+    quant_n_estimators=200,
+    alpha=4.0
 )
 
 
@@ -77,7 +134,16 @@ EXPERIMENTS = [
     Experiment(
         name=f"benchmark_{dataset}",
         datasets=[MonsterDataset(dataset, cache_dir=get_cache_dir())],
-        algorithms=[default_quant_aaltd, default_hydra_aaltd, ensemble_default, ensemble_dataleak_default],
+        algorithms=[
+            default_quant_aaltd,
+            default_hydra_aaltd,
+            ensemble_qfeat_hlogits_et,
+            ensemble_qfeat_hlogits_ridge,
+            ensemble_dual_oof,
+            ensemble_feat_concat_ridge,
+            ensemble_feat_concat_et,
+            ensemble_cawpe
+        ],
         output_dir=get_results_dir()
     )
     for dataset in SUCCESSFUL_DATASETS

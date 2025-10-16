@@ -376,6 +376,18 @@ def run_complementarity_analysis(dataset_name):
         print(f"  ERROR: Feature complementarity computation failed: {e}")
         raise
 
+    # Save feature samples for visualization (1000 samples max)
+    n_viz_samples = min(1000, len(X_subsample))
+    if n_viz_samples < len(X_subsample):
+        print(f"\nSaving {n_viz_samples} feature samples for visualization...")
+        viz_idx = np.random.RandomState(42).choice(len(X_subsample), n_viz_samples, replace=False)
+    else:
+        print(f"\nSaving all {n_viz_samples} feature samples for visualization...")
+        viz_idx = np.arange(n_viz_samples)
+
+    hydra_feats_viz = hydra_feats[viz_idx].cpu().numpy() if isinstance(hydra_feats, torch.Tensor) else hydra_feats[viz_idx]
+    quant_feats_viz = quant_feats[viz_idx].cpu().numpy() if isinstance(quant_feats, torch.Tensor) else quant_feats[viz_idx]
+
     print(f"\nFeature Complementarity Results:")
     print(f"  Avg max cross-correlation: {feature_metrics['avg_max_cross_correlation']:.4f}")
     print(f"  Std max cross-correlation: {feature_metrics['std_max_cross_correlation']:.4f}")
@@ -454,6 +466,11 @@ def run_complementarity_analysis(dataset_name):
         error_correlation=pred_metrics['error_correlation'],
         disagreement_rate=pred_metrics['disagreement_rate'],
         oracle_accuracy=pred_metrics['oracle_accuracy'],
+
+        # Feature samples for visualization (1000 samples)
+        hydra_features_viz=hydra_feats_viz,
+        quant_features_viz=quant_feats_viz,
+        n_viz_samples=n_viz_samples,
     )
 
     print(f"\n{'='*80}")
