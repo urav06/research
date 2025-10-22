@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\caption{Complete algorithm comparison across all ensemble strategies. Accuracy on held-out test sets. Missing entries indicate algorithm failures.}\label{tab:full_results}
+\centering
+\footnotesize
+\begin{tabular}{lrrrrrrrrr}
+\toprule
+Dataset & Q & H-U & H-M & FC-R & FC-ET & QH-R & QH-ET & DO-ET & CAWPE \\
+\midrule
+FordChallenge   & 0.923 & --- & 0.780 & 0.760 & 0.925 & 0.816 & \textbf{0.928} & 0.919 & 0.924 \\
+InsectSound     & 0.766 & 0.783 & --- & \textbf{0.812} & 0.777 & 0.805 & 0.810 & \textbf{0.812} & 0.794 \\
+LakeIce         & 0.997 & 0.989 & --- & 0.993 & 0.997 & 0.992 & 0.997 & \textbf{0.997} & 0.997 \\
+Pedestrian      & 0.778 & 0.606 & --- & 0.625 & 0.762 & 0.612 & \textbf{0.778} & 0.773 & 0.776 \\
+Tiselac         & 0.824 & --- & 0.802 & 0.816 & 0.828 & 0.821 & 0.825 & \textbf{0.830} & 0.829 \\
+Traffic         & 0.723 & 0.545 & --- & --- & 0.683 & 0.539 & 0.718 & \textbf{0.728} & 0.725 \\
+UCIActivity     & 0.958 & --- & 0.983 & 0.984 & 0.980 & 0.986 & 0.980 & \textbf{0.992} & 0.984 \\
+USCActivity     & 0.749 & --- & 0.665 & 0.718 & 0.767 & 0.733 & \textbf{0.772} & 0.737 & 0.760 \\
+WISDM           & 0.870 & --- & 0.810 & 0.843 & 0.883 & 0.799 & \textbf{0.893} & 0.893 & 0.890 \\
+WISDM2          & \textbf{0.665} & --- & 0.630 & 0.635 & 0.660 & 0.633 & 0.663 & 0.633 & 0.659 \\
+\midrule
+\textit{Mean} & 0.825 & 0.731 & 0.779 & 0.798 & 0.826 & 0.773 & 0.836 & 0.831 & 0.834 \\
+\botrule
+\end{tabular}
+\end{table*}
