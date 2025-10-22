@@ -1,0 +1,23 @@
+\begin{table}[t]
+\caption{Complementarity metrics and ensemble performance. Feat Corr: median feature correlation (lower = more complementary). Err Corr: error correlation. Oracle Gain: theoretical upper bound. Ensemble gains show improvement over best base algorithm.}\label{tab:complementarity_summary}
+\centering
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Dataset & Feat Corr & Err Corr & Oracle & QFeat-HL & CAWPE & DualOOF \\
+\midrule
+InsectSound          & 0.583 & 0.476 & 0.0773 & +0.0272 & +0.0110 & +0.0294 \\
+WISDM                & 0.628 & 0.471 & 0.0473 & +0.0234 & +0.0199 & +0.0232 \\
+USCActivity          & 0.709 & 0.253 & 0.1239 & +0.0229 & +0.0117 & -0.0117 \\
+UCIActivity          & 0.663 & 0.139 & 0.0142 & -0.0037 & +0.0004 & +0.0083 \\
+Tiselac              & 0.514 & 0.695 & 0.0347 & +0.0006 & +0.0045 & +0.0058 \\
+FordChallenge        & 0.460 & 0.312 & 0.0225 & +0.0052 & +0.0011 & -0.0037 \\
+Traffic              & 0.480 & 0.446 & 0.0518 & -0.0054 & +0.0020 & +0.0043 \\
+LakeIce              & 0.619 & 0.256 & 0.0014 & +0.0003 & -0.0000 & +0.0004 \\
+Pedestrian           & 0.500 & 0.495 & 0.0363 & +0.0002 & -0.0019 & -0.0045 \\
+WISDM2               & 0.675 & 0.668 & 0.0614 & -0.0022 & -0.0054 & -0.0322 \\
+\midrule
+\textit{Mean} & 0.583 & 0.421 & 0.0471 & +0.0069 & +0.0043 & +0.0019 \\
+\botrule
+\end{tabular}
+\end{table}

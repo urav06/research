@@ -145,148 +145,322 @@
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 
+\clearpage
+
 \section{Related Work}\label{sec2}
 
-The evolution of time series classification has been characterized by the emergence of diverse algorithmic paradigms, each capturing different aspects of temporal patterns, alongside sophisticated ensemble methods that achieve state-of-the-art accuracy through principled combination strategies. In this section, we examine the theoretical foundations underlying successful TSC approaches, ensemble design principles, and identify opportunities for targeted algorithmic complementarity that balance accuracy with computational efficiency.
+Time series classification confronts a fundamental challenge: different problem types favor different algorithmic approaches. While combining diverse algorithms achieves state of the art accuracy, computational costs often exceed 300 hours of training. Recent fast algorithms reduce this to under 2 hours but sacrifice the benefits of combination. This work explores whether targeted ensemble strategies can capture complementarity while maintaining efficiency.
 
-\subsection{Time Series Classification Paradigms}
+\subsection{Paradigm Diversity in Time Series Classification}
 
-The comprehensive evaluation by \citet[p.~610]{tsc-bakeoff} established a fundamental taxonomic framework for TSC algorithms, identifying five primary paradigms based on their discriminatory features. \textbf{Whole series methods} compare time series as vectors or using elastic distance measures, with Dynamic Time Warping serving as the canonical example. \textbf{Interval-based methods} select phase-dependent segments of the series and extract statistical features from these intervals. \textbf{Shapelet-based approaches} discover phase-independent discriminative subsequences \citep{time_series_shapelets}, while \textbf{dictionary methods} build classification models on histograms of recurring pattern frequencies. Finally, \textbf{combination approaches} integrate multiple paradigms to leverage complementary information sources.
+The comprehensive evaluation by \citet{tsc-bakeoff} established that time series classification problems exhibit substantial heterogeneity, identifying five primary algorithmic paradigms \citep[Section~2, pp.~610--611]{tsc-bakeoff}: whole series methods using elastic distance measures like dynamic time warping \citep[p.~611]{tsc-bakeoff}, interval based methods extracting statistical features from subseries, shapelet based approaches discovering phase independent discriminative subsequences, dictionary methods classifying based on recurring symbolic patterns, and combination approaches integrating multiple paradigms.
 
-This paradigm diversity reflects a fundamental principle established by \citet[p.~637]{tsc-bakeoff}: ``no one representation will dominate'' across the diverse range of problem types encountered in practice. Their rigorous evaluation of 18 algorithms across 85 datasets revealed that performance differences between optimal and suboptimal paradigms can range from 5-15\% \citep[p.~647, Table~11]{tsc-bakeoff}, demonstrating substantial gains achievable through intelligent paradigm combination.
+The critical empirical finding is that no single paradigm dominates across all problem types \citep[Table~11, p.~648]{tsc-bakeoff}. Performance differences between optimal and suboptimal paradigms range from 5\% to 15\%, with gaps exceeding 14\% when dictionary methods are optimal compared to whole series approaches \citep[Table~11, p.~648]{tsc-bakeoff}. This paradigm diversity establishes the theoretical motivation for ensemble methods: combining approaches from different paradigms can capture discriminatory features that no single method detects.
 
-\subsection{Ensemble Methods in Time Series Classification}
+\subsection{Ensemble Approaches}
+
+\subsubsection{HIVE-COTE: Comprehensive Multi-Paradigm Combination}
+
+HIVE-COTE 2.0 demonstrates that systematic multi-paradigm combination achieves state of the art performance by integrating four component classifiers from distinct representational domains \citep[p.~3]{hive-cote-2}: the Shapelet Transform Classifier for phase independent patterns, the Temporal Dictionary Ensemble for frequency features, the Diverse Representation Canonical Interval Forest for interval statistics, and Arsenal for convolutional features.
+
+The combination strategy employs Cross-validation Accuracy Weighted Probabilistic Ensemble (CAWPE) weighting \citep{cawpe}, raising each component's estimated accuracy to power $\alpha=4$ to magnify competence differences \citep[p.~1675]{cawpe}. This approach improved time series classification accuracy from 85.97\% to 87.16\% \citep[Figure~8, p.~1692]{cawpe}, a 1.19 percentage point gain through combination methodology alone.
+
+HIVE-COTE 2.0 ranks first on 112 UCR datasets \citep[p.~3]{hive-cote-2} but requires 340.21 hours training compared to 2.85 hours for ROCKET \citep[Table~4, p.~18]{hive-cote-2}, a 119 fold increase. This computational expense motivates development of efficient algorithms that capture complementarity without prohibitive cost.
 
 \subsubsection{Theoretical Foundations}
 
-The theoretical foundation for ensemble methods in machine learning was established by \citet[p.~241]{stacked-generalization}, who demonstrated that ensemble approaches work by ``deducing the biases of the generalizer(s) with respect to a provided learning set.'' Wolpert's stacked generalization framework provides a principled meta-learning approach that goes beyond simple voting by learning optimal combination weights through structured bias correction \citep[p.~242]{stacked-generalization}.
+Ensemble theory establishes that combining diverse algorithms can exceed individual performance when base learners capture complementary discriminatory features. Stacked generalization \citep{stacked-generalization} provides the meta-learning framework: ensembles work by deducing the biases of base algorithms with respect to the learning set \citep[p.~241]{stacked-generalization}, training a meta-learner to identify when each algorithm produces reliable predictions. The framework partitions training data to generate out of fold predictions, preventing meta-learners from memorizing training errors \citep[p.~244]{stacked-generalization}.
 
-Modern ensemble theory emphasizes the critical role of diversity in achieving performance gains. The bias-variance-covariance decomposition shows that ensemble effectiveness depends not only on individual component accuracy but also on the correlation structure between base learners. For time series classification, this diversity principle manifests through the combination of different representational paradigms that capture orthogonal aspects of temporal patterns.
+Effective combination requires base algorithms that span the space of generalizers and are mutually orthogonal \citep[p.~256]{stacked-generalization}, capturing different problem aspects and making independent errors. The paradigm diversity demonstrated by \citet[Table~11, p.~648]{tsc-bakeoff} provides empirical support: different algorithmic families excel on different problem types, creating opportunity for complementary combination. CAWPE's exponential weighting exploits this by allowing stronger performers on specific problems to dominate while preserving diversity \citep[p.~1675]{cawpe}, balancing trust in accuracy estimates against hedging through combination.
 
-\subsubsection{Hierarchical Ensemble Architecture}
+\subsection{Fast Algorithms for Time Series Classification}
 
-The first comprehensive ensemble approach in TSC was COTE (Collective of Transformation-based Ensembles), which provided empirical validation of paradigm diversity principles \citep[p.~609]{tsc-bakeoff}. By combining four distinct transformation domains (shapelet, dictionary, interval, and spectral), COTE achieved over 8\% improvement compared to the then-dominant DTW approach, demonstrating the substantial gains possible through paradigm integration.
+\subsubsection{ROCKET: Random Convolutional Kernels}
 
-HIVE-COTE extended this approach through hierarchical architecture that addressed bias issues in flat ensemble structures \citep[p.~7]{hive-cote}. The key innovation was organizing ensembles into domain-specific modules, each providing a single weighted vote rather than allowing domains with more base learners to dominate the final decision. HIVE-COTE 2.0 \citep[p.~3]{hive-cote-2} further refined this architecture with five domains: dictionary-based TDE, interval-based DrCIF, convolution-based Arsenal, shapelet-based STC, and distance-based methods, achieving state-of-the-art accuracy through this comprehensive coverage.
+ROCKET \citep{rocket} demonstrated that random convolutional kernels combined with simple linear classifiers achieve state of the art accuracy at a fraction of traditional computational expense. The method generates 10,000 random kernels with varying parameters and applies two pooling operators: proportion of positive values (PPV), capturing the fraction of the series matching kernel patterns, and global max pooling \citep[Section~3, pp.~1462--1463]{rocket}. While individual random kernels provide approximate feature detection, the ensemble of diverse kernels collectively captures discriminatory patterns \citep[p.~1455]{rocket}. ROCKET trained in under 2 hours for 85 datasets compared to over 11 days for HIVE-COTE \citep[p.~1455]{rocket}, establishing random convolution as a viable paradigm.
 
-However, this comprehensive coverage requires substantial computational resources. HIVE-COTE 2.0 training on 112 UCR datasets requires over 340 hours, compared to under 3 hours for ROCKET \citep[Table~4, p.~3228-3229]{hive-cote-2}. Three factors contribute to this cost: individual components such as STC, TDE, and DrCIF involve computationally expensive operations; combining multiple such components in an ensemble compounds these costs; and several components cannot process data in batches, creating memory constraints when scaling to large datasets \citep[p.~3239]{hive-cote-2}. While contractable training reduces this burden, achieving 98\% of full accuracy in 4 hours \citep[p.~3237]{hive-cote-2}, the computational requirements remain substantial compared to modern efficient algorithms.
+\subsubsection{Hydra: Competing Kernels}
 
-\subsubsection{Ensemble Combination Strategies}
+Building on ROCKET's foundation, Hydra introduces a competing kernel mechanism bridging convolutional and dictionary approaches \citep{hydra}. The method organizes kernels into $g=64$ groups of $k=8$ kernels each \citep[Section~3.2, p.~1788]{hydra}. At each time point, only the kernel with largest magnitude response within each group contributes to the feature representation. The algorithm counts how often each kernel wins through hard counting (binary indicator) or soft counting (accumulated magnitude) \citep[Section~3.2, pp.~1789--1790]{hydra}.
 
-Beyond architectural considerations, the method for combining ensemble predictions critically impacts performance. \citet[p.~3]{cawpe} introduced the Cross-validation Accuracy Weighted Probabilistic Ensemble (CAWPE) framework, which uses exponential weighting with parameter $\alpha=4$ to ``magnify differences in competence'' between base classifiers. The mathematical formulation $p(y=i|E,x) \propto \sum_{j=1}^k w_j^4 p_j(y=i|M_j,x)$ \citep[p.~8, Equation~1]{cawpe} significantly outperforms simple averaging or voting strategies.
+This per time point competition connects to dictionary methods: just as dictionary approaches count word frequency, Hydra counts dominant kernel pattern frequency \citep[p.~1786]{hydra}. By varying group size $g$ and kernels per group $k$, the method interpolates between ROCKET's global pooling and dictionary style competition \citep[Figure~2, p.~1791]{hydra}. Hydra preserves temporal structure that global pooling discards, achieving accuracy comparable to dictionary methods while training in 31 minutes on 106 datasets \citep[p.~1781]{hydra}. Combining Hydra with MultiROCKET produces ensembles competitive with HIVE-COTE \citep[pp.~1796--1797]{hydra}.
 
-The effectiveness of probabilistic weighting over prediction-based combination was demonstrated through comprehensive ablation studies \citep[p.~22, Figure~12]{cawpe}, showing consistent improvements across accuracy, AUC, and negative log-likelihood metrics. When applied to HIVE-COTE, CAWPE improved overall accuracy from 85.97\% to 87.16\% \citep[p.~19]{cawpe}, representing a substantial 1.2 percentage point gain through improved combination methodology alone.
+\subsubsection{Quant: Interval Quantiles}
 
-Recent advances in ensemble combination include possibilistic approaches based on conformal prediction theory. \citet[p.~4]{ensemble-predictors} introduced Ensemble Predictors that use three combination rules: $\Gamma_{min}$, $\Gamma_{max}$, and $\Gamma_w$, each with different validity guarantees. The $\Gamma_{max}$ predictor provides conservative validity with $P_r(y \notin \Gamma_{max}^{\varepsilon}) = C_Q(\varepsilon,\ldots,\varepsilon) \leq \varepsilon$ \citep[Theorem~4, p.~5]{ensemble-predictors}, offering theoretical performance bounds absent from traditional ensemble approaches.
+Quant represents a minimalist interval method using quantile features from fixed dyadic intervals \citep{quant}. The method recursively divides the series at depth $d=6$, creating hierarchical decompositions at scales $\{2^0, 2^1, \ldots, 2^5\}$ \citep[p.~2384]{quant}. For each interval of length $m$, Quant computes $k = 1 + \lfloor (m-1)/4 \rfloor$ evenly spaced quantiles, subtracting the interval mean from every second quantile to encode both absolute distributions and shift invariant shape at no additional cost \citep[p.~2385, Figure~4, p.~2386]{quant}. Features are extracted from four representations: original series, first order differences, second order differences, and Fourier transform magnitude \citep[Section~3.1, p.~2384]{quant}.
 
-While comprehensive ensembles like HIVE-COTE demonstrate the value of paradigm diversity, their computational requirements limit practical deployment. This challenge has motivated development of algorithms that achieve competitive accuracy with substantially reduced computational demands.
+Quantiles subsume traditional summary statistics \citep[p.~2378]{quant} while enabling the classifier to handle interval selection through 10\% feature sampling at each split \citep[Section~4.2.6, p.~2387]{quant}. Quant trains in under 15 minutes on 142 datasets \citep[p.~2390]{quant}, ranking sixth in the 2024 comprehensive comparison \citep[Table~14, p.~2008]{bakeoff-redux}.
 
-\subsection{Efficient Algorithm Development}
+\subsection{Strategies for Combining Algorithms}
 
-\subsubsection{The Convolutional Kernel Revolution}
+Three primary approaches exist for combining base algorithms into ensembles. \textbf{Feature concatenation} merges feature matrices $\mathbf{H} \in \mathbb{R}^{n \times d_H}$ and $\mathbf{Q} \in \mathbb{R}^{n \times d_Q}$ into $[\mathbf{H} \mid \mathbf{Q}]$ for a single classifier. This allows learning interactions between heterogeneous features but creates high dimensional spaces requiring classifiers with appropriate feature sampling strategies.
 
-A paradigm shift occurred with ROCKET \citep[p.~1455]{rocket}, which demonstrated that ``simple linear classifiers using random convolutional kernels achieve state-of-the-art accuracy with a fraction of the computational expense of existing methods.'' ROCKET's innovation challenged the prevailing assumption that computational complexity was necessary for high accuracy in TSC, achieving competitive performance with HIVE-COTE while requiring less than 2 hours for training across all 85 UCR datasets compared to days for existing methods.
+\textbf{Stacked generalization} \citep{stacked-generalization} operates on algorithm predictions rather than raw features. Training must use out of fold predictions to prevent overfitting \citep[p.~244]{stacked-generalization}: partition data into $K$ folds, train base algorithms on $K-1$ folds, generate predictions for the held out fold, then train the meta-learner on these out of fold predictions. This ensures the meta-learner learns generalizable combination patterns rather than memorizing training errors. The framework accommodates asymmetric designs where deterministic transformations (Quant features) combine with fitted model predictions (Hydra logits).
 
-The foundation enabled rapid algorithmic development within the ROCKET family. \citet{minirocket} achieved near-deterministic performance with 75x speed improvements through binary kernel weights and bias sampling strategies. \citet{multirocket} extended the approach with multiple pooling operators and first-order difference transformations, demonstrating that computational efficiency and representational diversity are not mutually exclusive objectives.
+\textbf{Weighted averaging} through CAWPE requires no meta-learner training \citep{cawpe}. Each algorithm's cross-validation accuracy determines weight $w_j$, raised to power $\alpha=4$ to amplify competence differences \citep[p.~1675]{cawpe}:
+\begin{equation}
+P(y=i \mid \mathbf{x}) = \frac{\sum_j w_j^\alpha \cdot P_j(y=i \mid \mathbf{x})}{\sum_j w_j^\alpha}
+\end{equation}
+This balances trusting accuracy estimates against hedging through combination, performing well on small training sets \citep[Table~3, p.~1693]{cawpe}.
 
-\subsubsection{Targeted Algorithmic Specialization}
+\subsection{Research Gap}
 
-Building on ROCKET's computational efficiency principles, recent work has explored targeted algorithms designed for specific representational strengths. \citet[p.~1780]{hydra} introduced Hydra, which bridges dictionary and convolutional approaches through ``competing convolutional kernels'' organized into groups where only the closest pattern match contributes to feature representation. This design combines ROCKET's computational efficiency with dictionary methods' interpretability advantages, achieving accuracy comparable to several state-of-the-art methods while maintaining fast training times.
+The preceding sections establish that paradigm diversity motivates ensembles (Section 2.1), comprehensive ensembles achieve state of the art accuracy but require 340 hours (Section 2.2), efficient algorithms like Hydra and Quant train in under 1 hour (Section 2.3), and theoretical frameworks exist for combination (Section 2.4). What remains unexplored is whether targeted combination of two efficient algorithms from complementary paradigms captures ensemble benefits while maintaining efficiency.
 
-Simultaneously, \citet[p.~2377]{quant} developed Quant, representing an ``attempt to condense various [interval-based] approaches into their essential ingredients.'' Quant's theoretical foundation rests on the principle that ``class can be distinguished based on the distribution of values in different locations of a time series,'' providing a complementary perspective to pattern-based approaches. Using only quantile features and fixed dyadic intervals, Quant achieves state-of-the-art accuracy with total compute time of less than 15 minutes across 142 UCR datasets.
+Hydra (competing convolutional kernels identifying dominant local patterns) and Quant (quantile based distributional statistics from hierarchical intervals) represent distinct paradigms mirroring HIVE-COTE's multi-paradigm coverage through two efficient components. Evidence that combining efficient methods shows promise exists: MultiROCKET combined with Hydra achieves 0.884 accuracy, ranking second and approaching HIVE-COTE \citep[Table~14, p.~2008]{bakeoff-redux}. However, that combination employs two convolution methods from the same paradigm. Whether cross-paradigm combination of Hydra and Quant yields similar benefits, and which combination strategy (concatenation, stacking, or CAWPE) proves most effective, remains an empirical question this work addresses.
 
-These two algorithms address orthogonal aspects of time series classification. Hydra identifies which local patterns are present and dominant through competing kernels \citep[p.~1780]{hydra}, while Quant characterizes statistical distributions within intervals through quantile features \citep[p.~2377]{quant}. This representational diversity mirrors the paradigm coverage that underlies HIVE-COTE's performance, but through two efficient components rather than five complex ensembles. Whether targeted combination of Hydra and Quant can achieve substantial ensemble gains while maintaining computational efficiency for large-scale datasets has not been systematically investigated.
-
-\subsection{Complementarity and Meta-Learning}
-
-\subsubsection{Algorithm Selection and Meta-Learning}
-
-The challenge of selecting appropriate TSC algorithms for specific problems has motivated meta-learning approaches that leverage historical performance patterns. The TSC-AutoML framework \citep{tsc-automl} addresses the Combined Algorithm Selection and Hyperparameter optimization (CASH) problem through a dual insurance strategy combining experience-driven meta-learners with warm-start optimization. Using 32 meta-features across time, frequency, and statistical domains \citep[Table~I, p.~8]{tsc-automl}, the approach achieves 68\% top-1 algorithm selection accuracy compared to 8-28\% for baseline AutoML methods \citep[Table~IV, p.~10]{tsc-automl}.
-
-The meta-learning perspective provides crucial insights for ensemble design by revealing which algorithmic approaches excel under different problem characteristics. The systematic categorization of TSC algorithms into complementary families \citep[Table~II, p.~9]{tsc-automl} demonstrates that ``no machine learning algorithm will ever be superior to any other algorithm in every aspect and tasks,'' reinforcing the theoretical basis for ensemble approaches that combine diverse algorithmic strengths.
-
-\subsubsection{Complementarity Analysis Frameworks}
-
-Understanding algorithmic complementarity requires systematic analysis of when and why different approaches succeed. The paradigm diversity principle established by \citet[p.~637]{tsc-bakeoff} provides empirical evidence for complementarity through cross-paradigm performance analysis, showing that algorithms optimized for one problem type may perform 5-15\% worse on problems suited to different paradigms \citep[Table~11, p.~647]{tsc-bakeoff}.
-
-Modern approaches to complementarity analysis leverage comprehensive feature characterizations to understand algorithm-problem relationships. The systematic extraction of 794 time-series features using established libraries enables principled analysis of which problem characteristics favor different algorithmic approaches, providing a foundation for targeted ensemble construction that goes beyond ad-hoc combination strategies.
-
-\subsection{Evaluation Methodology and Computational Considerations}
-
-\subsubsection{Dataset Selection and Benchmarking Bias}
-
-Traditional TSC evaluation has relied heavily on the UCR archive, but recent work has identified critical limitations in this approach. \citet[p.~5]{less-is-more} demonstrated that the UCR benchmark fails key quality requirements for non-redundancy, with clusters containing highly uneven dataset distributions (65, 53, 7, 68, 55, and 1 unique datasets respectively). This bias means that ``including more datasets from the same part of the landscape is in favor of some of the algorithms and the statistical outcome is questionable'' \citep[p.~6]{less-is-more}.
-
-The solution involves landscape analysis using comprehensive feature extraction (794 tsfresh features \citep[p.~3]{less-is-more}) followed by uniform sampling from identified problem clusters rather than using all available datasets. Bootstrap validation with 30 repetitions and 90\% representativeness thresholds \citep[p.~5-6]{less-is-more} provides more robust statistical comparisons than traditional approaches.
-
-\subsubsection{Large-Scale Evaluation Frameworks}
-
-Evaluation on large-scale benchmarks requires protocols that balance comprehensive algorithmic comparison with computational feasibility. Modern benchmarks containing datasets with millions of instances or very long series present particular challenges for algorithms that cannot efficiently process data in batches or require extensive per-dataset training time. This practical consideration motivates development of algorithms that combine strong performance with computational efficiency, enabling thorough evaluation across diverse problem types while maintaining feasibility on large-scale data.
+\clearpage
 
 \section{Methodology}\label{sec3}
 
-We develop a targeted ensemble approach that combines Hydra and Quant algorithms through systematic complementarity analysis and principled combination strategies. This methodology addresses the computational efficiency limitations of comprehensive ensembles while maintaining competitive accuracy through strategic algorithm selection.
+We develop systematic ensembles combining Hydra and Quant through comprehensive exploration of the ensemble design space. Prior work established that TSC problems benefit from combining classifiers built on different representations \citep[p.~3213]{hive-cote-2}, as different paradigms capture discriminatory features in distinct data domains. We validate this principle for Hydra and Quant through complementarity analysis before constructing ensembles, providing empirical foundation for the combination strategies.
 
-\subsection{Complementarity Analysis}
-% Analysis framework to understand when and why Hydra vs Quant excel on different problem types
-\begin{itemize}
-\item Meta-feature extraction using established time series characterization methods to identify problem-algorithm relationships
-\item Error pattern analysis to quantify the degree of complementarity between base learners across different dataset characteristics
-\end{itemize}
+\subsection{Complementarity Analysis Framework}\label{subsec:complementarity}
 
-\subsection{Base Algorithm Configuration}
-% Setup and optimization of individual Hydra and Quant components
-\begin{itemize}
-\item Hydra parameterization with competing kernel groups and dilation strategies for pattern-based discrimination
-\item Quant configuration with dyadic interval decomposition and quantile feature extraction for distributional analysis
-\end{itemize}
+To validate that Hydra and Quant capture orthogonal discriminatory information, we measure complementarity at both feature level (representation similarity) and prediction level (error independence). These metrics quantify the diversity that ensemble theory identifies as necessary for performance gains \citep{stacked-generalization}.
 
-\subsection{Ensemble Combination Framework}
-% Methods for combining predictions from complementary base learners
-\begin{itemize}
-\item CAWPE-based probabilistic weighting using cross-validation accuracy estimates with exponential emphasis ($\alpha=4$)
-\item Performance comparison across combination strategies to identify optimal integration approaches
-\end{itemize}
+\textbf{Feature-level complementarity.} We compute the Pearson correlation between each Hydra feature and each Quant feature, forming a cross-correlation matrix. For computational tractability on datasets with many features, we subsample up to 5,000 test instances. The median of the maximum absolute correlations (for each Hydra feature, its maximum absolute correlation with any Quant feature) quantifies feature space overlap. Low median correlation indicates that Hydra and Quant capture distinct aspects of the time series. We supplement this with canonical correlation analysis (CCA) to identify the dimensionality and strength of shared linear subspaces between the feature representations.
+
+\textbf{Prediction-level complementarity.} We define error vectors $\mathbf{e}_H$ and $\mathbf{e}_Q$ where $e_i = 1$ if algorithm misclassifies sample $i$, and 0 otherwise. The Pearson correlation $\rho(\mathbf{e}_H, \mathbf{e}_Q)$ quantifies error pattern similarity. Low error correlation indicates algorithms make mistakes on different samples, a favorable condition for ensemble combination. We also measure disagreement rate (fraction of samples where $\hat{y}_H \neq \hat{y}_Q$) and construct the oracle ensemble: a hypothetical perfect combiner that selects the correct prediction whenever at least one algorithm is correct.
+
+The oracle ensemble accuracy provides an upper bound \textit{specifically for prediction-combination strategies} (voting, weighting, meta-learning from logits). This bound does not constrain feature-concatenation ensembles: a joint model trained on concatenated Hydra and Quant features can potentially exceed the oracle bound by learning feature interactions invisible to individual models. The oracle gain, defined as oracle accuracy minus the better individual algorithm's accuracy, quantifies the theoretical improvement available through prediction-combination strategies.
+
+\subsection{Ensemble Design Space}\label{subsec:design_space}
+
+Combining Hydra and Quant requires several design decisions: what representations to combine (raw features, predictions, or logits), where to apply the meta-learner, and which meta-learner architecture to use. We systematically explore this design space through six ensemble configurations that cover the primary combination strategies while maintaining computational feasibility.
+
+\subsubsection{Feature Concatenation Ensembles}
+
+The simplest combination strategy concatenates Hydra and Quant features and trains a single classifier on the joint representation: $[\mathbf{H} \mid \mathbf{Q}] \rightarrow \text{Classifier}$, where $\mathbf{H} \in \mathbb{R}^{n \times d_H}$ represents Hydra features ($d_H \approx 10{,}000$) and $\mathbf{Q} \in \mathbb{R}^{n \times d_Q}$ represents Quant features ($d_Q$ proportional to series length).
+
+This approach requires careful consideration of the meta-learner. Hydra's features are individually weak: the competing kernel paradigm means each feature simply counts pattern occurrences, with discriminative power emerging from combinations of many features. Quant's interval quantiles are similarly distributional summaries rather than strong individual discriminators. A linear classifier like Ridge may struggle to exploit these heterogeneous feature spaces effectively, as it cannot learn the non-linear interactions between pattern counts and distributional statistics.
+
+We therefore test two meta-learners. \textbf{Ridge (FC-Ridge)} provides a linear baseline with L2 regularization, offering computational efficiency and built-in regularization for the high-dimensional feature space ($d_H + d_Q \approx 10{,}000+$). \textbf{ExtraTrees (FC-ET)} uses an ensemble of 200 extremely randomized decision trees with entropy criterion and max features set to 0.1 (a random subset of 10\% of all features are considered at each split). This non-linear ensemble can learn complex decision boundaries and feature interactions. The linear proportion of features per split (rather than $\sqrt{p}$) is critical: with large feature spaces, a sublinear number of candidate features per split could result in the classifier running out of training samples before adequately exploring the feature space \citep{quant}.
+
+Feature concatenation has a key advantage: both Hydra and Quant features can be computed directly on the training set without information leakage concerns, as neither involves fitted model predictions at the feature extraction stage.
+
+\subsubsection{Asymmetric Stacking: Quant Features with Hydra Logits}
+
+Stacking \citep{stacked-generalization} provides an alternative to raw feature concatenation by using one algorithm's predictions as inputs to another. For Hydra and Quant, an asymmetric stacking approach combines Quant's features (deterministic transformations) with Hydra's logits (outputs of a fitted Ridge classifier): $[\mathbf{Q} \mid \mathbf{L}_H] \rightarrow \text{Classifier}$, where $\mathbf{L}_H \in \mathbb{R}^{n \times c}$ represents Hydra's class probability estimates ($c$ is number of classes).
+
+This design reflects the distinction between fitted and non-fitted representations. Quant features are interval quantiles: deterministic transformations that do not depend on training data labels. Computing these on the full training set introduces no information leakage. However, Hydra's logits come from a Ridge classifier trained on Hydra features. Using predictions from a model trained on the same data the meta-learner will train on violates proper train-test separation and leads to overoptimistic performance estimates. This overfitting degrades generalization performance: the meta-learner learns to trust patterns that exist due to memorization rather than true predictive signal.
+
+We address this through out-of-fold (OOF) prediction generation. The training data $\mathcal{D}_{\text{train}}$ is partitioned into $K=5$ stratified folds $\{F_1, ..., F_5\}$. For each fold $F_k$: (1) train Hydra on the remaining $K-1$ folds: $\mathcal{D}_{\text{train}} \setminus F_k$, and (2) generate logits $\mathbf{L}_H^{(k)}$ for samples in $F_k$. After iterating through all folds, we obtain $\mathbf{L}_H^{\text{OOF}} \in \mathbb{R}^{n \times c}$ for the entire training set. Crucially, for any sample $i \in F_k$, the logits $\mathbf{L}_H^{\text{OOF}}[i]$ were generated by a Hydra model that never encountered sample $i$ during training.
+
+The meta-level training data is $\mathbf{X}_{\text{meta}} = [\mathbf{Q} \mid \mathbf{L}_H^{\text{OOF}}]$. For test data, we train Hydra on the complete training set to generate test logits $\mathbf{L}_H^{\text{test}}$, extract Quant features $\mathbf{Q}^{\text{test}}$, and produce final predictions from $[\mathbf{Q}^{\text{test}} \mid \mathbf{L}_H^{\text{test}}]$ via the trained meta-learner.
+
+This asymmetric design offers several advantages. The meta-learner has access to both raw distributional features (Quant) and aggregated pattern information (Hydra logits), providing complementary views. Hydra logits encode confidence in class predictions through the Ridge classifier's learned weights, while Quant features capture raw statistical information about value distributions. The meta-learner can learn context-dependent combination strategies: when to trust Hydra's pattern-based classifications versus when to rely on Quant's distributional evidence.
+
+We test two meta-learners: \textbf{Ridge (QFeat-HLogit-Ridge)} for linear combination, and \textbf{ExtraTrees (QFeat-HLogit-ET)} for non-linear combination enabling complex decision rules.
+
+\subsubsection{Symmetric Stacking: Dual Out-of-Fold Predictions}
+
+A symmetric alternative generates OOF predictions for both algorithms and trains the meta-learner on these predictions alone: $[\mathbf{L}_H^{\text{OOF}} \mid \mathbf{L}_Q^{\text{OOF}}] \rightarrow \text{ExtraTrees}$. This approach treats both algorithms identically, with neither receiving preferential treatment through raw feature access.
+
+For Quant, we perform the same $K$-fold procedure: train Quant (feature extraction followed by ExtraTrees classifier) on $K-1$ folds, generate logits for the held-out fold, and iterate to produce $\mathbf{L}_Q^{\text{OOF}} \in \mathbb{R}^{n \times c}$. The meta-learner trains on class probabilities alone (2$c$-dimensional input), learning which algorithm to trust under which conditions based solely on their predicted class distributions.
+
+We refer to this as \textbf{Dual-OOF-ET}. This symmetric design has theoretical appeal: it places both algorithms on equal footing and lets the meta-learner discover reliability patterns without bias toward one algorithm's feature space. However, it discards potentially useful information: the raw features that were used to generate the predictions. Whether this simplification aids or hinders meta-learning is an empirical question.
+
+\subsubsection{Weighted Averaging: CAWPE}
+
+Cross-validation Accuracy Weighted Probabilistic Ensemble (CAWPE) \citep{cawpe} provides an alternative to stacking that requires no meta-learner training. CAWPE estimates each algorithm's competence and uses these estimates to weight probability predictions.
+
+For each algorithm $j$, we estimate accuracy $\text{acc}_j$ and compute weight $w_j = \text{acc}_j^\alpha$, where $\alpha=4$ exponentially amplifies differences in estimated competence. Final predictions combine weighted probabilities:
+\begin{equation}
+P(y=i \mid \mathbf{x}) = \frac{w_H \cdot P_H(y=i \mid \mathbf{x}) + w_Q \cdot P_Q(y=i \mid \mathbf{x})}{w_H + w_Q}
+\end{equation}
+
+This approach has two key advantages: computational simplicity (no additional classifier training) and theoretical grounding (the exponential weighting significantly outperformed simple averaging, stacking, and ensemble selection methods across 206 datasets \citep{cawpe}). The choice of $\alpha=4$ balances trusting accuracy estimates (higher $\alpha$ puts more weight on the seemingly better algorithm) against hedging through combination (lower $\alpha$ weights both algorithms more equally). Our implementation details are described in Section~\ref{subsec:implementation}.
+
+\subsubsection{Summary of Ensemble Configurations}
+
+Table~\ref{tab:ensemble_summary} summarizes our six ensemble configurations. The design space exploration covers feature concatenation (testing linear vs. non-linear meta-learners), asymmetric stacking with OOF predictions (again with both meta-learners), symmetric stacking treating both algorithms identically, and weighted averaging without meta-learning. This systematic approach enables us to identify which combination strategies effectively leverage Hydra-Quant complementarity while maintaining computational feasibility.
+
+\begin{table}[h]
+\centering
+\caption{Summary of six ensemble configurations exploring the design space of combining Hydra and Quant. Specific hyperparameters for all configurations are detailed in Section~\ref{subsec:implementation}.}\label{tab:ensemble_summary}
+\small
+\begin{tabular}{llcc}
+\toprule
+\textbf{Strategy} & \textbf{Inputs to Meta-Learner} & \textbf{Meta-Learner} & \textbf{OOF?} \\
+\midrule
+FC-Ridge & $[\mathbf{H} \mid \mathbf{Q}]$ & Ridge & No \\
+FC-ET & $[\mathbf{H} \mid \mathbf{Q}]$ & ExtraTrees & No \\
+QFeat-HLogit-Ridge & $[\mathbf{Q} \mid \mathbf{L}_H^{\text{OOF}}]$ & Ridge & Yes (Hydra) \\
+QFeat-HLogit-ET & $[\mathbf{Q} \mid \mathbf{L}_H^{\text{OOF}}]$ & ExtraTrees & Yes (Hydra) \\
+Dual-OOF-ET & $[\mathbf{L}_H^{\text{OOF}} \mid \mathbf{L}_Q^{\text{OOF}}]$ & ExtraTrees & Yes (both) \\
+CAWPE & Weighted prob. combination & None & No \\
+\botrule
+\end{tabular}
+\end{table}
+
+\clearpage
 
 \section{Experimental Design}\label{sec4}
 
-Our experimental evaluation follows established TSC benchmarking protocols while addressing dataset selection bias and computational efficiency considerations. The design enables comprehensive assessment of ensemble performance across diverse problem types and scales.
+\subsection{Datasets}
 
-\subsection{Datasets and Evaluation Protocol}
-% Standard benchmarking approach with bias-aware dataset selection
-\begin{itemize}
-\item UCR time series archive (112 datasets) with stratified resampling for robust statistical analysis
-\item Dataset selection methodology following landscape analysis principles to ensure representative problem coverage
-\end{itemize}
+We evaluate on 10 datasets from the MONSTER benchmark \citep{monster}, a large-scale time series classification archive designed to address computational and evaluation challenges of modern TSC. These datasets were selected from an initial complementarity analysis of MONSTER datasets based on successful completion of feature extraction and prediction generation for both algorithms.
 
-\subsection{Performance Metrics}
-% Comprehensive evaluation across accuracy and efficiency dimensions
-\begin{itemize}
-\item Classification performance: accuracy, balanced accuracy, AUROC, and negative log-likelihood for probabilistic evaluation
-\item Computational efficiency: training time, inference time, and memory usage for practical applicability assessment
-\end{itemize}
+The selected datasets span diverse application domains and scales. Human activity recognition from wearable sensors includes UCIActivity (7,898 train / 2,401 test, 9 channels, 128 time points, 6 classes), USCActivity (43,060 / 13,168, 6 channels, 100 time points, 12 classes), WISDM (11,989 / 5,177, 3 channels, 100 time points, 6 classes), and WISDM2 (98,094 / 50,940, 3 channels, 100 time points, 6 classes). Vehicular and pedestrian sensor data includes FordChallenge (29,003 / 7,254, 30 channels, 40 time points, 2 classes), Traffic (1,168,774 / 292,194, 1 channel, 24 time points, 7 classes), and Pedestrian (151,696 / 37,925, 1 channel, 24 time points, 82 classes). Environmental monitoring includes LakeIce (103,424 / 25,856, 1 channel, 161 time points, 3 classes), remote sensing includes Tiselac (79,907 / 19,780, 10 channels, 23 time points, 9 classes), and audio classification includes InsectSound (40,000 / 10,000, 1 channel, 600 time points, 10 classes).
 
-\subsection{Baseline Comparisons}
-% Systematic comparison against individual algorithms and state-of-the-art ensembles
-\begin{itemize}
-\item Individual algorithm performance: Hydra alone and Quant alone to quantify ensemble gains
-\item State-of-the-art comparison: HIVE-COTE 2.0, MultiROCKET variants, and other leading TSC methods
-\end{itemize}
+These 10 datasets provide coverage across univariate and multivariate problems, with training set sizes from 7,898 to 1,168,774 instances, class counts from 2 to 82, and both short (23 time points) and long (600 time points) series.
 
-\subsection{Statistical Analysis}
-% Rigorous statistical evaluation following TSC best practices
-\begin{itemize}
-\item Wilcoxon signed-rank tests with Holm correction for multiple comparisons across algorithm pairs
-\item Critical difference diagrams and Multiple Comparison Matrix (MCM) analysis for comprehensive performance visualization
-\end{itemize}
+\subsection{Implementation}\label{subsec:implementation}
+
+\textbf{Base Algorithms.} We employ Hydra and Quant as described in Section 2.3. For Hydra, we use $k=8$ kernels per group, $g=64$ groups (yielding 512 total kernels per dilation level), and random seed 42 for kernel initialization. For Quant, we use depth $d=6$ (creating dyadic intervals at scales $\{2^0, 2^1, ..., 2^5\}$) with divisor $v=4$ (computing $1 + \lfloor (m-1)/4 \rfloor$ quantiles per interval of length $m$). Quant operates on four representations: original series, smoothed first difference (moving average window=5), second difference, and discrete Fourier transform magnitude \citep{quant}.
+
+\textbf{Feature Concatenation Ensembles.} Ridge uses L2 regularization with automatic alpha selection via cross-validation. ExtraTrees uses 200 estimators, entropy criterion, and max\_features=0.1 (10\% of features considered per split), following the Quant implementation \citep{quant}. This linear proportion of features prevents feature space exhaustion on high-dimensional problems.
+
+\textbf{Stacking Ensembles.} For asymmetric and symmetric stacking, we employ 5-fold stratified cross-validation for out-of-fold prediction generation, following established TSC benchmarking protocols \citep{tsc-bakeoff}. The ExtraTrees meta-learners use the same configuration as feature concatenation (200 estimators, entropy criterion, max\_features=0.1). Ridge meta-learners use the same cross-validated alpha selection.
+
+\textbf{CAWPE.} We use training set accuracy as a computational proxy for cross-validation accuracy estimation, with exponential weighting parameter $\alpha=4$. While the original CAWPE formulation employs cross-validation \citep{cawpe}, we use in-sample accuracy to reduce computational overhead for this systematic exploration of ensemble configurations. The exponential weighting magnifies competence differences as specified in the original method.
+
+\textbf{Computational Environment.} All experiments run on the M3 HPC cluster (Monash University) using Intel Xeon Gold 6548Y+ CPUs with 8 cores and 256GB RAM allocated per job. Hydra operations utilize GPU acceleration where available. We use Python 3.11 with PyTorch 2.0, scikit-learn 1.3, and NumPy 1.24.
+
+All experiments use predefined train/test splits from the MONSTER benchmark to ensure reproducibility and fair comparison across all ensemble configurations.
+
+\subsection{Evaluation Protocol}
+
+We measure classification accuracy on held-out test sets, reporting results from single-run experiments (no repeated trials). For each dataset, we compute the ensemble gain as the difference between ensemble accuracy and the better-performing base algorithm: $\text{Gain} = \text{Acc}_{ensemble} - \max(\text{Acc}_{Hydra}, \text{Acc}_{Quant})$. Positive gains indicate the ensemble outperforms both base algorithms.
+
+To contextualize ensemble performance relative to theoretical potential, we define oracle utilization as the ratio of actual ensemble gain to oracle gain:
+\begin{equation}
+\text{Oracle Utilization} = \frac{\text{Ensemble Gain}}{\text{Oracle Gain}} \times 100\%
+\end{equation}
+Negative oracle utilization indicates the ensemble performed worse than the better base algorithm, despite theoretical potential for improvement.
+
+We quantify computational efficiency through wall-clock training time, measured from the start of feature extraction through final model fitting. For stacking ensembles, this includes cross-validation overhead for OOF prediction generation (training each base algorithm 5 times). For CAWPE, this includes model training for both algorithms. All timing measurements represent single runs on consistent hardware, reported as time per 1000 training samples to account for dataset size differences.
+
+For complementarity analysis, we compute feature-level metrics (median cross-correlation between Hydra and Quant feature spaces, canonical correlation analysis) and prediction-level metrics (error correlation, disagreement rate, oracle ensemble accuracy) on test data after training both algorithms on the full training set. Feature extraction for complementarity analysis uses up to 5,000 randomly sampled test instances (random seed 42) to manage memory requirements for correlation computations on datasets with very large test sets.
+
+For statistical comparison across multiple datasets, we apply the Wilcoxon signed-rank test with Holm correction for multiple comparisons \citep{tsc-bakeoff}. This non-parametric paired test is appropriate for comparing algorithms across multiple datasets without assuming normal distributions. We report p-values with significance threshold $\alpha=0.05$.
+
+\clearpage
 
 \section{Results}\label{sec5}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+\subsection{Complementarity Analysis}
+
+Following the complementarity analysis framework described in Section~\ref{subsec:complementarity}, we measured feature-level and prediction-level complementarity between Hydra and Quant across 10 MONSTER datasets (subsampled to 5,000 instances where necessary, per Section 4.3) to validate the hypothesis that these algorithms capture orthogonal discriminatory information.
+
+\textbf{Feature-level complementarity.} Median cross-correlation between Hydra and Quant feature representations ranged from 0.460 (FordChallenge) to 0.709 (USCActivity), with mean $0.583 \pm 0.089$. This moderate correlation indicates that while the feature spaces share some information, substantial complementarity exists. The lowest correlations occurred on high-dimensional multivariate data (FordChallenge: 0.460, Tiselac: 0.514), where Hydra's convolution-based patterns and Quant's quantile-based distributions capture fundamentally different signal characteristics. Higher correlations appeared on activity recognition data (USCActivity: 0.709, UCIActivity: 0.663), suggesting representational overlap when discriminatory information concentrates in common temporal features.
+
+Canonical correlation analysis confirmed these patterns. The first canonical correlation averaged 0.997 across datasets (range: 0.987 to 1.000), indicating strong linear dependency in a single dimension, but this reflects the high dimensionality of both feature spaces rather than complete overlap. The shared information occupies low-dimensional subspaces while most feature dimensions remain independent.
+
+\textbf{Prediction-level complementarity.} Error correlation between Hydra and Quant predictions averaged $0.421 \pm 0.181$ across datasets, ranging from near-zero (UCIActivity: 0.139) to high correlation (Tiselac: 0.695). Low error correlation indicates complementary decision boundaries, where algorithms make mistakes on different samples. Disagreement rates averaged 21.9\%, with substantial variation (1.0\% on LakeIce to 39.8\% on Traffic), reflecting dataset-dependent complementarity strength.
+
+Oracle ensemble accuracy, measuring the fraction of test samples correctly classified by at least one algorithm, exceeded the better individual algorithm by 0.0014 to 0.1239 (mean gain: 0.0471, or 4.71\% absolute improvement over best base). This quantifies the theoretical upper bound achievable through prediction-combination strategies. The largest gains appeared on multi-class problems with moderate individual accuracy (USCActivity: 12.39\% gain, InsectSound: 7.73\% gain, WISDM2: 6.14\% gain), where algorithms exhibit different class-specific strengths. Minimal gains occurred on problems where one algorithm dominates (LakeIce: 0.14\% gain, where Quant achieves 99.7\% accuracy).
+
+\textbf{Feature concatenation exceeds oracle bound.} While the oracle bound constrains prediction-combination strategies, feature-concatenation ensembles can exceed it by learning interactions invisible to individual models. Empirically, FC-ExtraTrees correctly classified 12,556 test samples (across all 10 datasets) where both Hydra and Quant failed, demonstrating that joint feature-space models can indeed surpass the prediction-combination ceiling. This oracle-exceeding rate varied by dataset, from 3.6\% of "both wrong" samples (Tiselac) to 91.7\% (UCIActivity), indicating that the capacity to learn novel feature interactions depends on problem characteristics.
+
+Figure~\ref{fig:complementarity} summarizes these findings. The results confirm that Hydra and Quant capture complementary discriminatory information, with complementarity strength varying across problem types. Unlike previous studies that inferred complementarity from performance differences across problem types, we directly quantified complementarity through feature correlation and error analysis within each dataset.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figure1_complementarity}
+\caption{Complementarity between Hydra and Quant across 10 MONSTER datasets. (A) Algorithm performance complementarity showing accuracy of both algorithms on each dataset. Points away from the diagonal indicate performance differences. Univariate (blue) and multivariate (orange) datasets show no systematic pattern. (B) Oracle ensemble potential measuring theoretical upper bound for prediction-combination strategies. Green bars indicate high oracle potential (gain $>5\%$), orange indicates moderate potential ($2$--$5\%$), red indicates low potential ($<2\%$). Note that feature-concatenation ensembles can exceed these bounds.}\label{fig:complementarity}
+\end{figure*}
+
+\subsection{Ensemble Performance}
+
+Table~\ref{tab:algorithm_comparison} presents comprehensive results comparing Hydra, Quant (two base algorithms), and the top three ensemble configurations across all 10 datasets. These three ensembles represent the strongest performers from our systematic design space exploration: QFeat-HLogit-ET (asymmetric stacking with ExtraTrees), CAWPE (weighted averaging), and DualOOF-ET (symmetric stacking).
+
+\input{table1_algorithm_comparison}
+
+\textbf{Ridge vs ExtraTrees meta-learners.} Figure~\ref{fig:ensemble}A shows the critical importance of meta-learner choice for feature concatenation ensembles. ExtraTrees consistently outperforms Ridge across 9 of 9 datasets (Traffic excluded due to missing Ridge configuration), with mean accuracy of 0.827 vs 0.797 for Ridge. This 3 percentage point advantage demonstrates that non-linear meta-learning is essential for exploiting heterogeneous feature spaces: Ridge cannot effectively combine Hydra's pattern-counting features with Quant's distributional statistics, while ExtraTrees learns complex decision boundaries that adaptively weight different feature types. This finding validates the design principle that individually weak features from competing kernels and interval quantiles require non-linear aggregation.
+
+\textbf{Top ensemble performance.} Figure~\ref{fig:ensemble}B presents gains for the three best ensembles relative to the best base algorithm. QFeat-HLogit-ET achieved mean accuracy of 0.836, representing a 0.0072 absolute improvement (0.87\% relative gain) over the mean best-base accuracy of 0.829. The ensemble improved over the better base algorithm on 7 of 10 datasets (70\%), with largest improvements on USCActivity (+2.29pp), WISDM (+2.34pp), and InsectSound (+2.72pp). However, QFeat-HLogit-ET degraded performance on UCIActivity (--0.37pp) and Pedestrian (--0.02pp), showing that even the strongest ensemble configuration cannot universally improve over base algorithms.
+
+CAWPE provided a different accuracy-consistency trade-off, achieving mean accuracy of 0.834 with more consistent but smaller gains. Its largest improvement was InsectSound (+1.10pp), with moderate gains on WISDM (+1.99pp) and USCActivity (+1.17pp). CAWPE degraded performance on 2 datasets (WISDM2: --0.54pp, Pedestrian: --1.97pp).
+
+DualOOF-ET, despite its symmetric design, achieved mean accuracy of 0.831. Its strength lay in consistency: it provided the largest gain on UCIActivity (+8.33pp, where other ensembles struggled), but showed mixed results elsewhere.
+
+\textbf{No hero ensemble.} Critically, no single ensemble dominates across all datasets. Of the 10 datasets, QFeat-HLogit-ET ranks first on 4, CAWPE on 3, and DualOOF-ET on 1 (with base algorithms winning the remaining 2). This finding demonstrates that ensemble effectiveness is problem-dependent: the optimal combination strategy depends on the specific complementarity pattern between algorithms for each dataset, rather than one strategy being universally superior.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figure2_ensemble_performance}
+\caption{Ensemble performance analysis across 10 MONSTER datasets. (A) Classifier comparison for feature concatenation strategy: Ridge (red) vs ExtraTrees (green) meta-learners across 9 datasets. ExtraTrees consistently outperforms Ridge, demonstrating the importance of non-linear meta-learning for heterogeneous feature spaces. (B) Top three ensemble performance gains relative to best base algorithm. QFeat-HLogit-ET (primary ensemble), CAWPE (weighted averaging), and DualOOF-ET (symmetric stacking) show varying effectiveness across datasets, with largest improvements on USCActivity, WISDM, and InsectSound.}\label{fig:ensemble}
+\end{figure*}
+
+\subsection{Predictors of Ensemble Success}\label{subsec:predictors}
+
+To understand what determines ensemble effectiveness, we analyzed correlations between complementarity metrics and ensemble gains, focusing on QFeat-HLogit-ET (our strongest configuration) as the primary analysis target.
+
+\textbf{Oracle gain as key predictor.} We observed a strong positive correlation between oracle gain and actual ensemble gain (Pearson $r=0.791$, $p=0.0064$). This correlation indicates that datasets with high theoretical ensemble potential (large oracle gains) tend to realize correspondingly high actual gains, regardless of other problem characteristics. The relationship appears roughly linear: for every 1 percentage point of oracle gain, the ensemble captures approximately 0.081 percentage points of actual improvement.
+
+This finding suggests that the ceiling matters more than the pathway: the theoretical potential for improvement, determined by base algorithm accuracy gaps and error patterns, predicts ensemble success better than measures of how algorithms differ in their representations. The broader implication is significant for ensemble design. Rather than focusing primarily on ensuring algorithms have complementary features (the pathway), practitioners should first assess whether base algorithms exhibit complementary error patterns that create oracle potential (the ceiling). If one algorithm dominates completely (as Quant does on LakeIce with 99.7\% accuracy), even highly complementary representations yield minimal gains.
+
+This principle has practical consequences for algorithm selection in ensemble contexts. The results suggest we should seek pairs of algorithms that are both: (1) individually strong (to maintain high baseline performance), and (2) complementary in their error patterns (to create oracle potential). Feature-space diversity without prediction-level complementarity is insufficient.
+
+\textbf{Feature complementarity shows no correlation.} Contrary to initial hypotheses, median feature cross-correlation showed no significant correlation with ensemble gain (Pearson $r=0.127$, $p=0.73$). This null result reveals a critical insight: complementary feature representations do not guarantee ensemble success.
+
+Consider two contrasting cases. FordChallenge exhibits strong feature-level complementarity (median correlation 0.460), yet achieves near-zero ensemble gain (+0.52pp). This occurs because Quant already achieves 92.3\% accuracy, leaving little room for improvement despite highly complementary features. Conversely, USCActivity shows weaker complementarity (correlation 0.709), yet achieves large ensemble gain (+2.29pp) because both base algorithms perform moderately (Hydra: 66.5\%, Quant: 74.9\%), and oracle analysis reveals substantial potential (12.39\% oracle gain).
+
+This pattern indicates that complementarity is necessary but not sufficient for ensemble success. Algorithms must capture different information (complementarity), but they must also both be reasonably accurate and leave room for improvement (oracle potential).
+
+We examined correlations between dataset properties (number of classes, series length, number of channels, training set size) and ensemble gain. None showed significant correlations (all $|r| < 0.4$, all $p > 0.1$), suggesting ensemble effectiveness depends more on algorithm-specific factors (base accuracies, error patterns) than on intrinsic dataset properties.
+
+\textbf{Oracle utilization reveals optimization gap.} QFeat-HLogit-ET captured only 15.2\% of theoretical oracle potential on average, with substantial variation across datasets (range: --2.6\% to 35.2\%). Even on datasets where the ensemble succeeded, utilization remained low. The best case, WISDM (35.2\% utilization), still captured less than half the available potential. USCActivity, despite achieving large absolute gain (+2.29pp from 12.39\% oracle potential), utilized only 18.5\% of the theoretical ceiling.
+
+This low utilization suggests current meta-learning strategies are far from optimal. The meta-learner appears unable to reliably identify when to trust each algorithm's predictions, sometimes overweighting incorrect predictions or failing to leverage situations where algorithms make complementary errors. Several factors may contribute. First, the meta-learner trains on a relatively small number of OOF predictions ($n$ training samples), which may be insufficient to learn reliable combination rules. Second, the 2$c$-dimensional logit space (for $c$ classes) may not contain sufficient information about when each algorithm should be trusted: the confidence scores alone may not reveal the problem characteristics that determine algorithm reliability. Third, ExtraTrees may lack the capacity to learn the complex conditional logic required for optimal algorithm selection.
+
+\clearpage
 
 \section{Discussion}\label{sec6}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+Our systematic exploration of ensemble strategies for combining Hydra and Quant reveals both the potential and limitations of targeted ensemble approaches in time series classification. We achieved measurable improvements (mean 0.72\% gain over best base), demonstrating that complementary algorithms from different paradigms can be successfully combined. However, the modest magnitude of gains and low oracle utilization (15.2\% on average) indicate substantial room for improvement in meta-learning strategies.
+
+\subsection{Implications of Oracle Potential as Primary Predictor}
+
+The strong correlation between oracle gain and ensemble success ($r=0.791$, $p=0.0064$) provides actionable guidance for ensemble construction: assess prediction-level complementarity before investing in complex meta-learning architectures. This finding challenges the common practice of combining algorithms based primarily on representational diversity. While our results confirm that Hydra and Quant do exhibit complementary features (median cross-correlation 0.46--0.71 across datasets), this feature-level complementarity does not predict ensemble gains ($r=0.127$, $p=0.73$).
+
+Importantly, the oracle bound constrains only prediction-combination strategies, not feature-concatenation approaches. Our empirical results (Section 5.1) demonstrate that FC-ExtraTrees exceeded the oracle bound on all 10 datasets by correctly predicting 12,556 samples where both base algorithms failed. This confirms the theoretical prediction that joint feature-space models can learn interactions invisible to individual classifiers, though the magnitude of oracle-exceeding gains remained modest (0.21--3.40\% of test samples across datasets).
+
+The practical implication is to shift ensemble design focus from "What different representations do these algorithms use?" to "Do these algorithms make mistakes on different samples?" The oracle analysis provides a simple diagnostic: if oracle gain is small (for example, LakeIce with 0.14\% oracle gain), ensemble methods are unlikely to provide substantial improvements regardless of how complementary the features appear. Conversely, high oracle gain (USCActivity with 12.4\%) indicates fertile ground for ensemble methods, even if feature representations show moderate correlation.
+
+This principle extends beyond Hydra-Quant combinations. For any pair of candidate algorithms, computing oracle accuracy on a validation set provides an upper bound estimate before committing computational resources to training complex meta-learners or exploring ensemble architectures. When oracle potential is low, practitioner effort may be better spent on algorithm selection or hyperparameter tuning rather than ensemble construction.
+
+\subsection{The Meta-Learning Optimization Gap}
+
+Our ensembles captured only 15.2\% of theoretical oracle potential, indicating that current meta-learning strategies are far from optimal. This raises a fundamental question: why do meta-learners struggle to exploit complementarity that oracle analysis shows exists?
+
+We identify three potential explanations. First, \textbf{insufficient meta-learning signal}: the meta-learner trains on $n$ OOF predictions (where $n$ is training set size), which may be inadequate for learning reliable combination rules, particularly for datasets with many classes where the prediction space is high-dimensional. Second, \textbf{information bottleneck}: the 2$c$-dimensional logit space (for $c$ classes) may not encode sufficient information about when each algorithm should be trusted. The confidence scores reflect how certain each algorithm is, but not the problem characteristics that determine reliability. Third, \textbf{meta-learner capacity}: ExtraTrees may lack the capacity to learn complex conditional logic like "trust Hydra on long-series problems with periodic patterns, but trust Quant on short-series problems with distributional shifts."
+
+Addressing these limitations suggests several research directions. \textbf{Richer meta-features}: Rather than using only logits, meta-learners could incorporate problem descriptors (series length, number of classes, distribution statistics) to learn context-dependent combination rules. \textbf{Instance-level features}: Computing simple statistics on the input time series (mean, variance, autocorrelation) and concatenating with logits may help the meta-learner identify when each algorithm should be trusted. \textbf{Metalearning architectures}: Neural meta-learners or gradient-boosted trees might better capture complex combination logic than ExtraTrees. \textbf{Multi-level stacking}: Training multiple meta-learner layers, where higher levels learn when to trust lower-level predictions, could iteratively refine combination strategies.
+
+However, these directions trade increased complexity for potentially marginal gains. Given that our simplest successful configuration (QFeat-HLogit-ET) achieves only 15.2\% oracle utilization with modest actual gains (0.72\%), the question becomes: is the computational overhead of more sophisticated meta-learning justified? For practitioners working with limited computational budgets, focusing on algorithm selection and hyperparameter tuning may yield better returns than elaborate ensemble architectures.
+
+\subsection{No Universal Ensemble Strategy}
+
+A critical finding is that no single ensemble configuration dominates across all datasets. QFeat-HLogit-ET ranks first on 4 of 10 datasets, CAWPE on 3, DualOOF-ET on 1, with base algorithms winning the remaining 2. This heterogeneity mirrors the broader TSC principle that "no one representation will dominate" \citep{tsc-bakeoff}, extended to the meta-learning level.
+
+This result has important implications. First, it suggests that \textbf{ensemble selection is itself a meta-learning problem}: given a dataset, which combination strategy (feature concatenation, asymmetric stacking, symmetric stacking, or weighted averaging) will perform best? Our experiments do not identify reliable predictors of which strategy succeeds, as dataset properties (size, classes, length) showed no significant correlations with ensemble choice effectiveness.
+
+Second, the heterogeneity validates our systematic design space exploration approach. Had we tested only one ensemble configuration (as prior work often does), we would have drawn misleading conclusions about Hydra-Quant complementarity based on which specific configuration happened to be tested. The finding that ExtraTrees universally outperforms Ridge for feature concatenation, while different high-level strategies (stacking vs weighted averaging) excel on different datasets, suggests that meta-learner choice and combination strategy operate at different levels of the design space.
+
+Third, for practitioners, this implies that \textbf{cross-validation over ensemble configurations} may be necessary. Rather than selecting one ensemble strategy a priori, allocating computational budget to evaluate 2 to 3 configurations via nested cross-validation may improve final performance. However, this compounds the already substantial computational cost: each stacking ensemble requires 5-fold cross-validation, and evaluating multiple strategies multiplies this overhead.
+
+\subsection{Computational Cost Considerations}
+
+Our strongest ensemble (QFeat-HLogit-ET) provides a mean 0.72\% accuracy improvement while increasing training time by approximately 2.5 times (from Quant alone) due to 5-fold cross-validation overhead. For practitioners, this trade-off may be unfavorable in many contexts. If computational budget is limited, running Quant (which individually outperforms Hydra on 8 of 10 datasets) may be preferable to investing resources in ensemble construction.
+
+The cost-benefit analysis depends on problem context. For applications where small accuracy improvements are valuable (medical diagnosis, financial prediction), the 0.72\% gain may justify increased computational cost. For rapid prototyping or large-scale benchmarking studies, the computational overhead may be prohibitive. Appendix Figure~\ref{fig:computational} shows that Quant and Hydra provide the best efficiency-accuracy trade-offs, with ensembles falling in the high-cost, modest-benefit region.
+
+This suggests a staged approach: begin with individual base algorithms to establish baselines, compute oracle gain to assess ensemble potential, and only if oracle gain exceeds a threshold (for example, 5\%) invest in ensemble construction. This avoids wasted effort on datasets where theoretical potential is minimal.
+
+\subsection{Limitations and Future Work}
+
+Our study focuses on two algorithms (Hydra and Quant) from specific paradigms (convolution and interval-based). Generalization to other algorithm pairs requires validation. While the systematic design space exploration and oracle analysis framework applies broadly, the specific finding that QFeat-HLogit-ET performs best may not transfer to other algorithm combinations.
+
+The evaluation uses 10 MONSTER datasets, providing coverage across domains and scales but representing a limited sample of the broader TSC problem landscape. Extension to the full MONSTER collection (29 datasets) and traditional UCR archive would strengthen conclusions about ensemble effectiveness patterns.
+
+Several promising research directions emerge from this work. First, investigating why meta-learners achieve low oracle utilization could lead to improved combination strategies. Second, developing predictive models for ensemble selection (which configuration to use for a given dataset) would automate a currently manual design choice. Third, extending the complementarity analysis framework to larger ensembles (3 or more algorithms) could reveal whether pairwise complementarity predicts multi-algorithm ensemble success. Finally, exploring neural meta-learners that jointly learn feature extraction and combination could surpass the two-stage approach we employ.
+
+Despite these limitations, our work provides the most comprehensive analysis to date of targeted ensemble strategies for modern efficient TSC algorithms, demonstrating both the potential and current limitations of this approach.
+
+\clearpage
 
 \section{Conclusion}\label{sec13}
 
@@ -295,6 +469,58 @@ Conclusions may be used to restate your hypothesis or research question, restate
 In some disciplines use of Discussion or 'Conclusion' is interchangeable. It is not mandatory to use both. Please refer to Journal-level guidance for any specific requirements. 
 
 \backmatter
+
+\clearpage
+
+\begin{appendices}
+
+\section{Complete Algorithm Comparison}\label{appA}
+
+Table~\ref{tab:full_results} presents complete results across all ensemble configurations.
+
+\input{tableA1_full_results}
+
+\clearpage
+
+\section{Dataset Characteristics}\label{appB}
+
+Table~\ref{tab:dataset_characteristics} summarizes characteristics of the 10 MONSTER benchmark datasets used in this study.
+
+\input{tableA2_dataset_characteristics}
+
+\clearpage
+
+\section{Complementarity Metrics}\label{appC}
+
+Table~\ref{tab:complementarity_summary} presents complete complementarity statistics and ensemble performance.
+
+\input{table2_complementarity_summary}
+
+Table~\ref{tab:complementarity_summary} shows substantial variation in feature-level complementarity (Feat Corr), prediction-level complementarity (Err Corr), oracle potential (Oracle Gain), and actual ensemble improvements across datasets. InsectSound, WISDM, and USCActivity exhibit the highest oracle gains (7.7\%, 4.7\%, 12.4\% respectively) and correspondingly achieve the largest ensemble improvements. This pattern demonstrates that oracle potential (the theoretical ceiling) predicts ensemble success better than feature-level complementarity measures.
+
+\clearpage
+
+\section{Computational Cost Analysis}\label{appD}
+
+Figure~\ref{fig:full_heatmap} shows the complete algorithm comparison heatmap across all 9 datasets (Traffic excluded due to missing ensemble configuration).
+
+\begin{figure*}[!h]
+\centering
+\includegraphics[width=\textwidth]{figureA1_full_heatmap}
+\caption{Complete algorithm comparison across 9 MONSTER datasets (Traffic excluded). Colors indicate performance relative to best base algorithm per dataset. Green cells show improvements, red shows degradation, yellow shows comparable performance. No single ensemble dominates across all datasets, validating the need for problem-specific ensemble selection.}\label{fig:full_heatmap}
+\end{figure*}
+
+Figure~\ref{fig:computational} presents computational cost analysis.
+
+\begin{figure*}[!h]
+\centering
+\includegraphics[width=\textwidth]{figureA2_computational_cost}
+\caption{Computational cost analysis. (A) Training time distribution per algorithm showing median (orange line) and quartiles. Ensembles with OOF prediction generation (QFeat-HLogit-ET, CAWPE, DualOOF-ET) incur 5-fold cross-validation overhead. (B) Accuracy vs normalized computational cost (time per 1000 training samples). Normalization accounts for dataset size differences. Quant and Hydra-Multi offer best efficiency, while ensembles trade computational cost for marginal accuracy gains.}\label{fig:computational}
+\end{figure*}
+
+\end{appendices}
+
+\clearpage
 
 \bmhead{Supplementary information}
 
@@ -348,28 +574,6 @@ Nature Portfolio journals: \url{https://www.nature.com/nature-research/editorial
 \bigskip\noindent
 BMC journals: \url{https://www.biomedcentral.com/getpublished/editorial-policies}
 \end{flushleft}
-
-\begin{appendices}
-
-\section{Section title of first appendix}\label{secA1}
-
-An appendix contains supplementary information that is not an essential part of the text itself but which may be helpful in providing a more comprehensive understanding of the research problem or it is information that is too cumbersome to be included in the body of the paper.
-
-%%=============================================%%
-%% For submissions to Nature Portfolio Journals %%
-%% please use the heading ``Extended Data''.   %%
-%%=============================================%%
-
-%%=============================================================%%
-%% Sample for another appendix section			       %%
-%%=============================================================%%
-
-%% \section{Example of another appendix section}\label{secA2}%
-%% Appendices may be used for helpful, supporting or essential material that would otherwise 
-%% clutter, break up or be distracting to the text. Appendices can consist of sections, figures, 
-%% tables and equations etc.
-
-\end{appendices}
 
 %%===========================================================================================%%
 %% If you are submitting to one of the Nature Portfolio journals, using the eJP submission   %%

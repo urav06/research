@@ -1,0 +1,22 @@
+\begin{table}[t]
+\caption{Algorithm performance comparison across 10 MONSTER datasets. Accuracy values reported on held-out test sets. Best result per row in \textbf{bold}.}\label{tab:algorithm_comparison}
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+Dataset & Hydra & Quant & Best Base & QFeat+HLogit-ET & CAWPE & DualOOF-ET \\
+\midrule
+FordChallenge & 0.7804 & 0.9225 & 0.9225 & \textbf{0.9278} & 0.9236 & 0.9188 \\
+InsectSound & 0.7826 & 0.7656 & 0.7826 & 0.8098 & 0.7936 & \textbf{0.8120} \\
+LakeIce & 0.9891 & 0.9969 & 0.9969 & 0.9972 & 0.9969 & \textbf{0.9973} \\
+Pedestrian & 0.6064 & 0.7776 & 0.7776 & \textbf{0.7777} & 0.7756 & 0.7731 \\
+Tiselac & 0.8023 & 0.8243 & 0.8243 & 0.8249 & 0.8288 & \textbf{0.8301} \\
+Traffic & 0.5446 & 0.7235 & 0.7235 & 0.7181 & 0.7254 & \textbf{0.7277} \\
+UCIActivity & 0.9833 & 0.9579 & 0.9833 & 0.9796 & 0.9838 & \textbf{0.9917} \\
+USCActivity & 0.6652 & 0.7486 & 0.7486 & \textbf{0.7716} & 0.7603 & 0.7369 \\
+WISDM & 0.8099 & 0.8698 & 0.8698 & \textbf{0.8932} & 0.8897 & 0.8930 \\
+WISDM2 & 0.6304 & \textbf{0.6648} & \textbf{0.6648} & 0.6626 & 0.6594 & 0.6326 \\
+\midrule
+\textit{Mean} & 0.7594 & 0.8252 & 0.8294 & 0.8362 & 0.8337 & 0.8313 \\
+\botrule
+\end{tabular}
+\end{table}
