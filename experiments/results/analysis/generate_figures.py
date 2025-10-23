@@ -286,7 +286,8 @@ def generate_appendix_figure_a1():
     norm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
 
     im = ax.imshow(normalized_data.values, cmap='RdYlGn', aspect='auto', norm=norm,
-                   interpolation='none')  # Completely disable interpolation to avoid grey grid artifacts
+                   interpolation='none',  # Completely disable interpolation to avoid grey grid artifacts
+                   rasterized=True)  # FIX: Rasterize to prevent gradient rendering artifacts in EPS/PDF
 
     # Labels
     ax.set_xticks(np.arange(len(pivot_reorder.columns)))
@@ -341,8 +342,9 @@ def generate_appendix_figure_a1():
 
     plt.tight_layout()
 
-    # Save
-    fig.savefig(OUTPUT_DIR / 'figA1_full_heatmap.eps', format='eps', dpi=300, bbox_inches='tight')
+    # Save with lower DPI for rasterized content to reduce file size
+    # 100 DPI is sufficient for rasterized heatmap cells while keeping file size small
+    fig.savefig(OUTPUT_DIR / 'figA1_full_heatmap.eps', format='eps', dpi=100, bbox_inches='tight')
     fig.savefig(OUTPUT_DIR / 'figA1_full_heatmap.png', format='png', dpi=300, bbox_inches='tight')
     plt.close()
 
